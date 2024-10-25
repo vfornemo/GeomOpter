@@ -1,8 +1,12 @@
-mod coord;
-use std::f64::consts::SQRT_2;
+#![allow(non_snake_case)]
+
+
+pub mod coord;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
-use crate::data::{self, EPSILON_C};
+use coord::CoordVec;
+
+use crate::data::{self};
 use std::collections::VecDeque;
 
 #[derive(Debug)]
@@ -19,6 +23,7 @@ pub struct Bond {
     pub bond_type: BondType,
     pub bond_length: f64,
     pub e_str: f64,  // stretching energy (or vdw energy for atom pairs)
+    pub is_LJ_pair: bool,
 }
 
 
@@ -29,6 +34,7 @@ impl Bond {
             bond_type: BondType::XX,
             bond_length: 0.0f64,
             e_str: 0.0f64,
+            is_LJ_pair: false,
         }
     }
     
@@ -38,6 +44,7 @@ impl Bond {
             bond_type: BondType::XX,
             bond_length: 0.0f64,
             e_str: 0.0f64,
+            is_LJ_pair: false,
         }
     }
 
@@ -58,8 +65,8 @@ impl Bond {
         }
     }
 
-    fn get_bond_length(&mut self, coord: &Vec<[f64;3]>) {
-        self.bond_length = coord::get_distance(&coord[self.atms[0]-1], &coord[self.atms[1]-1]);
+    fn get_bond_length(&mut self, coord: &Vec<CoordVec>) {
+        self.bond_length = coord[self.atms[0]-1].distance(&coord[self.atms[1]-1]);
     }
 
     /// Calculate stretching energy of a bond
@@ -78,15 +85,17 @@ impl Bond {
         let sigma_CH = 2.0*(data::SIGMA_C*data::SIGMA_H).sqrt();
         let sigma_HH = 2.0*data::SIGMA_H;
         let sigma_CC = 2.0*data::SIGMA_C;
-
-        self.e_str = match self.bond_type {
-            BondType::CH => {4.0*epsilon_CH*((sigma_CH/self.bond_length).powi(12) - (sigma_CH/self.bond_length).powi(6))},
-            BondType::HH => {4.0*data::EPSILON_H*((sigma_HH/self.bond_length).powi(12) - (sigma_HH/self.bond_length).powi(6))},
-            BondType::CC => {4.0*data::EPSILON_C*((sigma_CC/self.bond_length).powi(12) - (sigma_CC/self.bond_length).powi(6))},
-            BondType::XX => 0.0,
+        if self.is_LJ_pair {
+            self.e_str = match self.bond_type {
+                BondType::CH => {4.0*epsilon_CH*((sigma_CH/self.bond_length).powi(12) - (sigma_CH/self.bond_length).powi(6))},
+                BondType::HH => {4.0*data::EPSILON_H*((sigma_HH/self.bond_length).powi(12) - (sigma_HH/self.bond_length).powi(6))},
+                BondType::CC => {4.0*data::EPSILON_C*((sigma_CC/self.bond_length).powi(12) - (sigma_CC/self.bond_length).powi(6))},
+                BondType::XX => 0.0,
+            }
         }
 
     }
+
     
 }
 
@@ -126,7 +135,7 @@ impl Angle {
         }
     }
 
-    fn get_angle(&mut self, coord: &Vec<[f64;3]>) {
+    fn get_angle(&mut self, coord: &Vec<CoordVec>) {
         self.angle = coord::get_angle(&coord[self.atms[0]-1], &coord[self.atms[1]-1], &coord[self.atms[2]-1]);
     }
 
@@ -168,14 +177,14 @@ impl Dihedral {
 
     fn from(atms: [usize;4]) -> Dihedral {
         Dihedral {
-            atms: atms,
+            atms,
             dihedral: 0.0f64,
             e_tor: 0.0f64,
         }
     }
 
-    fn get_dihedral(&mut self, coord: &Vec<[f64;3]>) {
-        self.dihedral = coord::get_dihedral(&coord[self.atms[0]-1], &coord[self.atms[1]-1], &coord[self.atms[2]-1], &coord[self.atms[3]-1]);
+    fn get_dihedral(&mut self, coord: &Vec<CoordVec>) {
+        self.dihedral = coord::get_dihedral_deg(&coord[self.atms[0]-1], &coord[self.atms[1]-1], &coord[self.atms[2]-1], &coord[self.atms[3]-1]);
     }
 
     fn get_e_tor(&mut self) {
@@ -191,7 +200,7 @@ pub struct Geom {
     pub atm_num: usize,  // Number of atoms
     pub atoms: Vec<String>,  // Atom sequence with element symbols
     pub atoms_idx: Vec<usize>,  // Atom sequence with atom numbers
-    pub coord: Vec<[f64;3]>,  // Cartesian coordinates
+    pub coord: Vec<CoordVec>,  // Cartesian coordinates
     pub bond_num: usize,  // Number of bonds
     pub bonds: Vec<Bond>,  // Bonds
     pub etol_str: f64,  // Total Stretching energy
@@ -205,6 +214,7 @@ pub struct Geom {
     pub neighbors: Vec<Vec<usize>>,  // Neighboring atoms of each atom
     pub atm_pair: Vec<Bond>,  // Atoms pairs for LJ calculation
     pub etol_vdw: f64,  // Total VDW energy
+    pub e_tol: f64,  // Total potential energy
 }
 
 impl Geom {
@@ -227,6 +237,7 @@ impl Geom {
             neighbors: Vec::new(),
             atm_pair: Vec::new(),
             etol_vdw: 0.0f64,
+            e_tol: 0.0f64,
         }
     }
 
@@ -250,12 +261,13 @@ impl Geom {
         for _ in 0..geom.atm_num {
             let line = reader.next().unwrap().unwrap();
             let mut iter = line.split_whitespace();
-            let x = iter.next().unwrap().parse::<f64>().unwrap();
-            let y = iter.next().unwrap().parse::<f64>().unwrap();
-            let z = iter.next().unwrap().parse::<f64>().unwrap();
+            let mut coord = CoordVec::new();
+            coord.x = iter.next().unwrap().parse::<f64>().unwrap();
+            coord.y = iter.next().unwrap().parse::<f64>().unwrap();
+            coord.z = iter.next().unwrap().parse::<f64>().unwrap();
             let atom = iter.next().unwrap();
             geom.atoms.push(atom.to_string());
-            geom.coord.push([x, y, z]);
+            geom.coord.push(coord);
         }
 
 
@@ -269,13 +281,10 @@ impl Geom {
             geom.bonds.push(bond);
         }
 
-        geom.build();
-        geom.logger();
-
         geom
     }
 
-    fn build(&mut self) {
+    pub fn build(&mut self) {
 
         self.atoms_idx = data::elems_to_idx(&self.atoms);
 
@@ -323,13 +332,16 @@ impl Geom {
         
         let atm_pair_table = self.get_atom_pair_table();
         for atm_pair in atm_pair_table {
-            let mut bond = Bond::from(atm_pair[0], atm_pair[1]);
+            let mut bond = Bond::from(atm_pair.0[0], atm_pair.0[1]);
+            bond.is_LJ_pair = atm_pair.1;
             bond.get_bond_type(&self.atoms_idx);
             bond.get_bond_length(&self.coord);
             bond.get_e_vdw();
             self.etol_vdw += bond.e_str;
             self.atm_pair.push(bond);
         }
+
+        self.e_tol = self.etol_str + self.etol_bend + self.etol_tor + self.etol_vdw;
 
 
 
@@ -341,14 +353,14 @@ impl Geom {
 
         println!("\nAtoms and coordinates (in Angstrom):");
         for i in 0..self.atm_num {
-            println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i][0], self.coord[i][1], self.coord[i][2]);
+            println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
         }
 
         println!("\nNumber of coordinates:");
         println!("Stretching: {}  Bending: {}  Torsion: {}", self.bond_num, self.angle_num, self.dihedral_num);
         println!("Internal: {}  Cartesian: {}", self.bond_num + self.angle_num + self.dihedral_num, 3*self.atm_num);
         println!("\nPotential energy at input structure:");
-        println!("{:-10.6} kcal/mol", self.etol_str + self.etol_bend + self.etol_tor + self.etol_vdw);  //potential energy
+        println!("{:-10.6} kcal/mol", self.e_tol);  //potential energy
         println!("   Stretch      Bend       Torsion      VDW");
         println!("{:-10.6}  {:-10.6}  {:-10.6}  {:-10.6}", self.etol_str, self.etol_bend, self.etol_tor, self.etol_vdw);
         println!("\nList of all bonds: (At1 - At2, with labels, and distance in Angstrom, energy contrib in kcal/mol)");
@@ -409,7 +421,7 @@ impl Geom {
     }
 
 
-    pub fn get_atom_pair_table(&self) -> Vec<[usize;2]> {
+    pub fn get_atom_pair_table(&self) -> Vec<([usize;2], bool)> {
         let mut atm_pair = Vec::new();
         for atm in 1..self.atm_num+1 {
             atm_pair.extend(self.search_LJ_neighbor(atm));
@@ -419,7 +431,7 @@ impl Geom {
 
     /// Search for neighbors of at lease 3 bonds away from an atom
     /// Level order traversal
-    pub fn search_LJ_neighbor(&self, atm: usize) -> Vec<[usize;2]> {
+    pub fn search_LJ_neighbor(&self, atm: usize) -> Vec<([usize;2], bool)> {
         let mut neighbors = Vec::new();
         let mut depth = 1;
         let mut q = VecDeque::new();
@@ -436,7 +448,9 @@ impl Geom {
                         q.push_back(*i);
                         visited[*i-1] = true;
                         if depth >= 3 && atm < *i {
-                            neighbors.push([atm, *i]);
+                            neighbors.push(([atm, *i], true));
+                        } else if depth < 3 && atm < *i {
+                            neighbors.push(([atm, *i], false));
                         }
                     }
                 }
