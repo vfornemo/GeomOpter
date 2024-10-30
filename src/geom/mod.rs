@@ -7,9 +7,12 @@ use std::io::{BufReader, BufRead};
 use coord::CoordVec;
 
 use crate::data::{self};
+use crate::io::Input;
+use crate::matrix::MatFull;
 use std::collections::VecDeque;
+use log::{debug, info, trace};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum BondType {
     CH,
     CC,
@@ -17,7 +20,7 @@ pub enum BondType {
     XX,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Bond {
     pub atms: [usize;2],
     pub bond_type: BondType,
@@ -100,7 +103,7 @@ impl Bond {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AngleType {
     CCC,
     XCX,
@@ -108,7 +111,7 @@ pub enum AngleType {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Angle {
     pub atms: [usize;3],
     pub angle_type: AngleType,
@@ -159,7 +162,7 @@ impl Angle {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dihedral {
     pub atms: [usize;4],
     pub dihedral: f64,
@@ -195,57 +198,61 @@ impl Dihedral {
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Geom {
-    pub atm_num: usize,  // Number of atoms
+    pub input: Input,  // Input file
+    pub natm: usize,  // Number of atoms
     pub atoms: Vec<String>,  // Atom sequence with element symbols
     pub atoms_idx: Vec<usize>,  // Atom sequence with atom numbers
     pub coord: Vec<CoordVec>,  // Cartesian coordinates
     pub bond_num: usize,  // Number of bonds
     pub bonds: Vec<Bond>,  // Bonds
-    pub etol_str: f64,  // Total Stretching energy
+    pub etot_str: f64,  // Total Stretching energy
     pub angle_num: usize,  // Number of angles
     pub angles: Vec<Angle>,  // Angles
-    pub etol_bend: f64,  // Total Bending energy
+    pub etot_bend: f64,  // Total Bending energy
     pub dihedral_num: usize,  // Number of dihedral angles
     pub dihedrals: Vec<Dihedral>,  // Dihedral angles
-    pub etol_tor: f64,  // Total Torsion energy
+    pub etot_tor: f64,  // Total Torsion energy
+    pub nintl: usize,  // Number of internal coordinates
     pub c_number: usize,  // Number of carbons
     pub neighbors: Vec<Vec<usize>>,  // Neighboring atoms of each atom
     pub atm_pair: Vec<Bond>,  // Atoms pairs for LJ calculation
-    pub etol_vdw: f64,  // Total VDW energy
-    pub e_tol: f64,  // Total potential energy
+    pub etot_vdw: f64,  // Total VDW energy
+    pub e_tot: f64,  // Total potential energy
 }
 
 impl Geom {
-    pub fn new() -> Geom {
+    pub fn new(input: Input) -> Geom {
         Geom {
-            atm_num: 0usize,
+            input,
+            natm: 0usize,
             atoms: Vec::new(),
             atoms_idx: Vec::new(),
             coord: Vec::new(),
             bond_num: 0usize,
             bonds: Vec::new(),
-            etol_str: 0.0f64,
+            etot_str: 0.0f64,
             angle_num: 0usize,
             angles: Vec::new(),
-            etol_bend: 0.0f64,
+            etot_bend: 0.0f64,
             dihedral_num: 0usize,
             dihedrals: Vec::new(),
-            etol_tor: 0.0f64,
+            etot_tor: 0.0f64,
+            nintl: 0usize,
             c_number: 0usize,
             neighbors: Vec::new(),
             atm_pair: Vec::new(),
-            etol_vdw: 0.0f64,
-            e_tol: 0.0f64,
+            etot_vdw: 0.0f64,
+            e_tot: 0.0f64,
         }
     }
 
     
-    pub fn from_mol2(mol2: &str) -> Geom {
-        let mut geom = Geom::new();
+    pub fn from_mol2(input: Input) -> Geom {
+        let mut geom = Geom::new(input);
         // open file
-        let file = File::open(mol2).expect("File not found");
+        let file = File::open(&geom.input.path).expect("File not found");
         let mut reader = BufReader::new(file).lines();
         let line1 = reader.next().unwrap().unwrap();
         
@@ -253,12 +260,12 @@ impl Geom {
         // number of atoms, number of bonds, number of substructures, number of features, number of sets
         // we only consider the first two numbers
         let mut iter = line1.split_whitespace();
-        geom.atm_num = iter.next().unwrap().parse::<usize>().unwrap();
+        geom.natm = iter.next().unwrap().parse::<usize>().unwrap();
         geom.bond_num = iter.next().unwrap().parse::<usize>().unwrap();
 
 
         // read atoms
-        for _ in 0..geom.atm_num {
+        for _ in 0..geom.natm {
             let line = reader.next().unwrap().unwrap();
             let mut iter = line.split_whitespace();
             let mut coord = CoordVec::new();
@@ -288,7 +295,7 @@ impl Geom {
 
         self.atoms_idx = data::elems_to_idx(&self.atoms);
 
-        for i in 0..self.atm_num {
+        for i in 0..self.natm {
             if self.atoms_idx[i] == 6 {
                 self.c_number += 1;
             }
@@ -299,7 +306,7 @@ impl Geom {
             bond.get_bond_type(&self.atoms_idx);
             bond.get_bond_length(&self.coord);
             bond.get_e_str();
-            self.etol_str += bond.e_str;
+            self.etot_str += bond.e_str;
         }
 
         self.get_neighbor();
@@ -313,7 +320,7 @@ impl Geom {
             angle.get_angle(&self.coord);
             angle.get_angle_type(&self.atoms_idx);
             angle.get_e_bend();
-            self.etol_bend += angle.e_bend;
+            self.etot_bend += angle.e_bend;
             self.angles.push(angle);
         }
 
@@ -326,7 +333,7 @@ impl Geom {
             let mut dihedral = Dihedral::from(atms);
             dihedral.get_dihedral(&self.coord);
             dihedral.get_e_tor();
-            self.etol_tor += dihedral.e_tor;
+            self.etot_tor += dihedral.e_tor;
             self.dihedrals.push(dihedral);
         }
         
@@ -337,50 +344,105 @@ impl Geom {
             bond.get_bond_type(&self.atoms_idx);
             bond.get_bond_length(&self.coord);
             bond.get_e_vdw();
-            self.etol_vdw += bond.e_str;
+            self.etot_vdw += bond.e_str;
             self.atm_pair.push(bond);
         }
 
-        self.e_tol = self.etol_str + self.etol_bend + self.etol_tor + self.etol_vdw;
-
+        self.e_tot = self.etot_str + self.etot_bend + self.etot_tor + self.etot_vdw;
+        self.nintl = self.bond_num + self.angle_num + self.dihedral_num;
 
 
     }
 
+    pub fn update(&mut self) {
+        self.etot_str = 0.0;
+        self.etot_bend = 0.0;
+        self.etot_tor = 0.0;
+        self.etot_vdw = 0.0;
+        self.e_tot = 0.0;
 
+        // build bonds
+        for b in self.bonds.iter_mut() {
+            b.get_bond_length(&self.coord);
+            b.get_e_str();
+            self.etot_str += b.e_str;
+        }
+
+        for a in self.angles.iter_mut() {
+            a.get_angle(&self.coord);
+            a.get_e_bend();
+            self.etot_bend += a.e_bend;
+        }
+
+        for d in self.dihedrals.iter_mut() {
+            d.get_dihedral(&self.coord);
+            d.get_e_tor();
+            self.etot_tor += d.e_tor;
+        }
+        
+        for ap in self.atm_pair.iter_mut() {
+            ap.get_bond_length(&self.coord);
+            ap.get_e_vdw();
+            self.etot_vdw += ap.e_str;
+        }
+
+        self.e_tot = self.etot_str + self.etot_bend + self.etot_tor + self.etot_vdw;
+
+    }
+
+    pub fn calc_intl_coord(&mut self) -> MatFull<f64> {
+
+        // build bonds
+        for b in self.bonds.iter_mut() {
+            b.get_bond_length(&self.coord);
+        }
+
+        for a in self.angles.iter_mut() {
+            a.get_angle(&self.coord);
+        }
+
+        for d in self.dihedrals.iter_mut() {
+            d.get_dihedral(&self.coord);
+        }
+
+        self.to_intl_coord()
+
+    }
+
+
+    /// Print out the information of the molecular geometry
+    /// Input:
+    /// level: usize, 0 for basic info, 1 for detailed info
     pub fn logger(&self) {
-        println!("The input file has {} atoms.", self.atm_num);
+   
+        info!("The input file has {} atoms.", self.natm);
+        info!("\nAtoms and coordinates (in Angstrom):");
+        self.formated_output_coord("info");
+        info!("\nNumber of coordinates:");
+        info!("Stretching: {}  Bending: {}  Torsion: {}", self.bond_num, self.angle_num, self.dihedral_num);
+        info!("Internal: {}  Cartesian: {}", self.nintl, 3*self.natm);
+        info!("\nPotential energy at input structure:");
+        info!("{:-10.6} kcal/mol", self.e_tot);  //potential energy
+        info!("Stretch, Bend, Torsion, VDW components of potential energy:");
+        info!("{:-10.6}  {:-10.6}  {:-10.6}  {:-10.6}", self.etot_str, self.etot_bend, self.etot_tor, self.etot_vdw); 
 
-        println!("\nAtoms and coordinates (in Angstrom):");
-        for i in 0..self.atm_num {
-            println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
-        }
-
-        println!("\nNumber of coordinates:");
-        println!("Stretching: {}  Bending: {}  Torsion: {}", self.bond_num, self.angle_num, self.dihedral_num);
-        println!("Internal: {}  Cartesian: {}", self.bond_num + self.angle_num + self.dihedral_num, 3*self.atm_num);
-        println!("\nPotential energy at input structure:");
-        println!("{:-10.6} kcal/mol", self.e_tol);  //potential energy
-        println!("   Stretch      Bend       Torsion      VDW");
-        println!("{:-10.6}  {:-10.6}  {:-10.6}  {:-10.6}", self.etol_str, self.etol_bend, self.etol_tor, self.etol_vdw);
-        println!("\nList of all bonds: (At1 - At2, with labels, and distance in Angstrom, energy contrib in kcal/mol)");
+        trace!("\nList of all bonds: (At1 - At2, with labels, and distance in Angstrom, energy contrib in kcal/mol)");
         for bond in self.bonds.iter() {
-            println!("{} {} - {} {}:    {:-8.5}    {:-8.5}", self.atoms[bond.atms[0]-1], bond.atms[0], self.atoms[bond.atms[1]-1], bond.atms[1], bond.bond_length, bond.e_str);
+            trace!("{} {} - {} {}:    {:-8.5}    {:-8.5}", self.atoms[bond.atms[0]-1], bond.atms[0], self.atoms[bond.atms[1]-1], bond.atms[1], bond.bond_length, bond.e_str);
         }
-        println!("\nList of all bending angles: (At1 - At2 - At3, with labels, angle in radian then degrees, energy contribution");
+        trace!("\nList of all bending angles: (At1 - At2 - At3, with labels, angle in radian then degrees, energy contribution");
         for angle in self.angles.iter() {
-            println!("{} {} - {} {} - {} {}:    {:-8.5}    {:-8.3}    {:-8.5}", self.atoms[angle.atms[0]-1], angle.atms[0], self.atoms[angle.atms[1]-1], angle.atms[1], self.atoms[angle.atms[2]-1], angle.atms[2], angle.angle.to_radians(), angle.angle, angle.e_bend);
+            trace!("{} {} - {} {} - {} {}:    {:-8.5}    {:-8.3}    {:-8.5}", self.atoms[angle.atms[0]-1], angle.atms[0], self.atoms[angle.atms[1]-1], angle.atms[1], self.atoms[angle.atms[2]-1], angle.atms[2], angle.angle.to_radians(), angle.angle, angle.e_bend);
         }
-        println!("\nList of all torsional angles: (At1 - At2 - At3 - At4, with labels, angle in radian then degrees,  energy contrib in kcal/mol");
+        trace!("\nList of all torsional angles: (At1 - At2 - At3 - At4, with labels, angle in radian then degrees,  energy contrib in kcal/mol");
         for dihedral in self.dihedrals.iter() {
-            println!("{} {} - {} {} - {} {} - {} {}:    {:-8.5}    {:-8.3}    {:-8.5}", self.atoms[dihedral.atms[0]-1], dihedral.atms[0], self.atoms[dihedral.atms[1]-1], dihedral.atms[1], self.atoms[dihedral.atms[2]-1], dihedral.atms[2], self.atoms[dihedral.atms[3]-1], dihedral.atms[3], dihedral.dihedral.to_radians(), dihedral.dihedral, dihedral.e_tor);
+            trace!("{} {} - {} {} - {} {} - {} {}:    {:-8.5}    {:-8.3}    {:-8.5}", self.atoms[dihedral.atms[0]-1], dihedral.atms[0], self.atoms[dihedral.atms[1]-1], dihedral.atms[1], self.atoms[dihedral.atms[2]-1], dihedral.atms[2], self.atoms[dihedral.atms[3]-1], dihedral.atms[3], dihedral.dihedral.to_radians(), dihedral.dihedral, dihedral.e_tor);
         }
-        println!("\nList of LJ atom pairs: (At1 - At2, with labels, distance,  vdW energy contrib in kcal/mol");
+        trace!("\nList of LJ atom pairs: (At1 - At2, with labels, distance,  vdW energy contrib in kcal/mol");
         for atm_pair in self.atm_pair.iter() {
-            println!("{} {} - {} {}:    {:-8.5}    {:-8.5}", self.atoms[atm_pair.atms[0]-1], atm_pair.atms[0], self.atoms[atm_pair.atms[1]-1], atm_pair.atms[1], atm_pair.bond_length, atm_pair.e_str);
+            trace!("{} {} - {} {}:    {:-8.5}    {:-8.5}", self.atoms[atm_pair.atms[0]-1], atm_pair.atms[0], self.atoms[atm_pair.atms[1]-1], atm_pair.atms[1], atm_pair.bond_length, atm_pair.e_str);
         }
-
-
+        
     }
 
     /// construct neighbor table for saturated hydrocarbons
@@ -397,7 +459,7 @@ impl Geom {
     /// 
     fn get_neighbor(&mut self) {
 
-        self.neighbors = vec![vec![]; self.atm_num];
+        self.neighbors = vec![vec![]; self.natm];
 
         for bond in &self.bonds {
             match bond.bond_type {
@@ -423,7 +485,7 @@ impl Geom {
 
     pub fn get_atom_pair_table(&self) -> Vec<([usize;2], bool)> {
         let mut atm_pair = Vec::new();
-        for atm in 1..self.atm_num+1 {
+        for atm in 1..self.natm+1 {
             atm_pair.extend(self.search_LJ_neighbor(atm));
         }
         atm_pair
@@ -435,7 +497,7 @@ impl Geom {
         let mut neighbors = Vec::new();
         let mut depth = 1;
         let mut q = VecDeque::new();
-        let mut visited = vec![false; self.atm_num];
+        let mut visited = vec![false; self.natm];
         visited[atm-1] = true;
         q.push_back(atm.clone());
 
@@ -506,7 +568,7 @@ impl Geom {
     /// 
     pub fn get_angle_table(&self) -> Vec<[usize;3]> {
         let mut table = Vec::new();
-        for i in 0..self.atm_num {
+        for i in 0..self.natm {
             if self.atoms_idx[i] == 6 {
                 let n_list = &self.neighbors[i];
                 for n in 0..n_list.len() {
@@ -519,5 +581,47 @@ impl Geom {
         table
     }
 
+    pub fn formated_output_coord(&self, print_level: &str) {
+
+        match print_level {
+            "info" => {
+                for i in 0..self.natm {
+                    info!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
+                }
+            },
+            "debug" => {
+                for i in 0..self.natm {
+                    debug!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
+                }
+            },
+            _ => {
+                for i in 0..self.natm {
+                    println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
+                }
+            },
+        }
+    }
+
+
+
+    pub fn to_intl_coord(&self) -> MatFull<f64> {
+        let mut intl_coord = Vec::new();
+        for b in self.bonds.iter() {
+            intl_coord.push(b.bond_length);
+        }
+        for a in self.angles.iter() {
+            intl_coord.push(a.angle.to_radians());
+        }
+        for d in self.dihedrals.iter() {
+            intl_coord.push(d.dihedral.to_radians());
+        }
+        MatFull::from_vec([self.nintl, 1], intl_coord)
+    }
+
+    pub fn to_car_coord(&self) -> MatFull<f64> {
+        let car_coord = self.coord.iter().map(|x| [x.x, x.y, x.z]).flatten().collect();
+        MatFull::from_vec([3*self.natm, 1], car_coord)
+    }
 
 }
+
