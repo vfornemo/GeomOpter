@@ -594,6 +594,12 @@ impl Geom {
                     debug!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
                 }
             },
+            "trace" => {
+                for i in 0..self.natm {
+                    println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
+                }
+            },
+            "off" => (),
             _ => {
                 for i in 0..self.natm {
                     println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);

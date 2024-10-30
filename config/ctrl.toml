@@ -11,6 +11,3 @@ rms_tol = 0.001
 
 # Cartesian Convergence tolerance
 car_conver = 0.000001
-
-# [library]
-# blas = "/opt/OpenBLAS/lib/"

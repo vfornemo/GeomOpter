@@ -249,6 +249,7 @@ impl MatFull<f64> {
             "debug" => debug!("{}", output),
             "info" => info!("{}", output),
             "trace" => trace!("{}", output),
+            "off" => (),
             _ => println!("{}", output),
         }
         

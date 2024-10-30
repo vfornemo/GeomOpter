@@ -16,6 +16,7 @@ pub fn formated_output_vec(vec: &Vec<f64>,  precision: usize, print_level: &str)
         "debug" => debug!("{}", output),
         "info" => info!("{}", output),
         "trace" => trace!("{}", output),
+        "off" => (),
         _ => println!("{}", output),
     }
 }
