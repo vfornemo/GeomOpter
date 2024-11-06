@@ -265,6 +265,7 @@ pub fn get_angle(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec) -> f64 {
 }
 
 
+/// format Vec\<CoordVec\> from Vec\<f64\>
 pub fn format_coord(coord: Vec<f64>) -> Vec<CoordVec> {
     if coord.len() % 3 != 0 {
         panic!("The length of the coordinate should be a multiple of 3");

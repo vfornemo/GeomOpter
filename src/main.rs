@@ -9,7 +9,7 @@ mod io;
 use geom::Geom;
 use log::info;
 use mol::Molecule;
-use opt::Opt;
+use opt::opt_car::OptCar;
 use log4rs;
 use crate::opt::opt_intl::OptIntl;
 
@@ -30,21 +30,21 @@ fn main() {
     let mut geom = Geom::from_mol2(input);
     geom.build();
     info!("\n**************** Initialize ****************");
-    // geom.logger();
+    geom.logger();
     let mut mol = Molecule::from(geom);
     mol.build();
-    // mol.logger();
+    mol.logger();
     let t_init = time.elapsed().as_secs_f64();
     t_tot += t_init;
 
-    info!("\n**************** Optimization ****************");
+    // info!("\n**************** Cartesian Optimization ****************");
     // mol.geom.logger();
-    let mut opt = Opt::from(mol.clone());
-    opt.build();
+    // let mut opt = OptCar::from(mol.clone());
+    // opt.build();
     // opt.logger();
-    opt.kernel();
-    let t_opt = time.elapsed().as_secs_f64();
-    t_tot += t_opt;
+    // opt.kernel();
+    // let t_opt = time.elapsed().as_secs_f64();
+    // t_tot += t_opt;
 
     info!("\n**************** Internal Optimization ****************");
     mol.geom.logger();
@@ -52,14 +52,16 @@ fn main() {
     opt_intl.logger();
     opt_intl.build();
     opt_intl.kernel();
-    
+    let t_opt_intl = time.elapsed().as_secs_f64();
+    t_tot += t_opt_intl;
 
 
     info!("\n**************** Summary ****************");
 
     info!("Time Usage: {:.2} s", t_tot);
     info!("Initialization time: {:.2} s", t_init);
-    info!("Optimization time: {:.2} s", t_opt);
+    // info!("Cartesian Optimization time: {:.2} s", t_opt);
+    info!("Internal Optimization time: {:.2} s", t_opt_intl);
 
 
 }

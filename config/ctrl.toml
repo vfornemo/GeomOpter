@@ -4,10 +4,10 @@ path = "examples/ethane.mol2"
 # path = "examples/methylcyclohexane.mol2"
 
 # max cycle for geometry optimization
-max_cycle = 300
+max_cycle = 50
 
 # RMS tolerance for geometry optimization
 rms_tol = 0.001
 
 # Cartesian Convergence tolerance
-car_conver = 0.000001
+car_conver = 0.00001

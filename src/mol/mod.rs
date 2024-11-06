@@ -14,15 +14,13 @@ pub struct Molecule {
     pub grad_tors: MatFull<f64>,
     pub grad_vdw: MatFull<f64>,
     pub grad_tot: MatFull<f64>,
-
-    // ...
 }
 
 impl Molecule {
 
     pub fn from(geom: Geom) -> Molecule {
         let natm = geom.natm;
-        let n_intl = geom.bond_num + geom.angle_num + geom.dihedral_num;
+        let n_intl = geom.nbond + geom.nangle + geom.ndihedral;
         Molecule {
             geom,
             B_mat: MatFull::<f64>::from_vec([natm*3, n_intl], vec![0.0; 3*natm*n_intl]),
@@ -36,26 +34,20 @@ impl Molecule {
 
     pub fn build(&mut self) {
         self.get_B_mat();
-
         self.get_g_str(); 
-
         self.get_g_bend();
-
         self.get_g_tors();
-
         self.get_g_vdw();
-
         self.get_g_tot();
-
     }
 
     pub fn update(&mut self) {
+        self.B_mat.reset();
         self.grad_bend.reset();
         self.grad_str.reset();
         self.grad_tors.reset();
         self.grad_vdw.reset();
         self.grad_tot.reset();
-
         self.build();
     }
 
@@ -91,7 +83,7 @@ impl Molecule {
     #[inline]
     fn get_B_mat(&mut self) {
         // partial bond to partial cartesian
-        for bi in 0..self.geom.bond_num {
+        for bi in 0..self.geom.nbond {
             let bond = &self.geom.bonds[bi];
             let coord_a = self.geom.coord[bond.atms[0]-1];
             let coord_b = self.geom.coord[bond.atms[1]-1];
@@ -101,10 +93,10 @@ impl Molecule {
 
         }
 
-        let mut offset = self.geom.bond_num;
+        let mut offset = self.geom.nbond;
 
         // partial angle to partial cartesian
-        for ai in 0..self.geom.angle_num {
+        for ai in 0..self.geom.nangle {
             let angle = &self.geom.angles[ai];
             let coord_a = self.geom.coord[angle.atms[0]-1];
             let coord_b = self.geom.coord[angle.atms[1]-1];
@@ -121,10 +113,10 @@ impl Molecule {
 
         }
 
-        offset += self.geom.angle_num;
+        offset += self.geom.nangle;
 
         // partial dihedral to partial cartesian 
-        for di in 0..self.geom.dihedral_num {
+        for di in 0..self.geom.ndihedral {
             let dihedral = &self.geom.dihedrals[di];
             let coord_a = self.geom.coord[dihedral.atms[0]-1];
             let coord_b = self.geom.coord[dihedral.atms[1]-1];
@@ -155,7 +147,7 @@ impl Molecule {
     /// Get the gradient of the stretch energy wrt the coordinates
     #[inline]
     fn get_g_str(&mut self) {
-        for bi in 0..self.geom.bond_num {
+        for bi in 0..self.geom.nbond {
             let bond = &self.geom.bonds[bi];
             // rBA/rAB
             let grad_r = self.B_mat.iter_col_range(bi, 3*bond.atms[0]-3, 3*bond.atms[0]); 
@@ -179,12 +171,12 @@ impl Molecule {
 
     #[inline]
     fn get_g_bend(&mut self) {
-        for ai in 0..self.geom.angle_num {
+        for ai in 0..self.geom.nangle {
             let angle = &self.geom.angles[ai];
             // rBA/rAB
-            let grad_a_a = self.B_mat.iter_col_range(ai+self.geom.bond_num, 3*angle.atms[0]-3, 3*angle.atms[0]); 
-            let grad_a_b = self.B_mat.iter_col_range(ai+self.geom.bond_num, 3*angle.atms[1]-3, 3*angle.atms[1]);
-            let grad_a_c = self.B_mat.iter_col_range(ai+self.geom.bond_num, 3*angle.atms[2]-3, 3*angle.atms[2]);
+            let grad_a_a = self.B_mat.iter_col_range(ai+self.geom.nbond, 3*angle.atms[0]-3, 3*angle.atms[0]); 
+            let grad_a_b = self.B_mat.iter_col_range(ai+self.geom.nbond, 3*angle.atms[1]-3, 3*angle.atms[1]);
+            let grad_a_c = self.B_mat.iter_col_range(ai+self.geom.nbond, 3*angle.atms[2]-3, 3*angle.atms[2]);
             match angle.angle_type {
                 AngleType::CCC => {
                                 grad_a_a.zip(self.grad_bend.iter_col_mut(angle.atms[0]-1)).for_each(|(x,y)| *y += 2.0*Ka_CCC*(angle.angle - A0_CCC).to_radians()*x);
@@ -208,9 +200,9 @@ impl Molecule {
 
     #[inline]
     fn get_g_tors(&mut self) {
-        for di in 0..self.geom.dihedral_num {
+        for di in 0..self.geom.ndihedral {
             let dihedral = &self.geom.dihedrals[di];
-            let offset = self.geom.bond_num + self.geom.angle_num;
+            let offset = self.geom.nbond + self.geom.nangle;
             // rBA/rAB
             let grad_d_a = self.B_mat.iter_col_range(di+offset, 3*dihedral.atms[0]-3, 3*dihedral.atms[0]); 
             let grad_d_b = self.B_mat.iter_col_range(di+offset, 3*dihedral.atms[1]-3, 3*dihedral.atms[1]);

@@ -205,13 +205,13 @@ pub struct Geom {
     pub atoms: Vec<String>,  // Atom sequence with element symbols
     pub atoms_idx: Vec<usize>,  // Atom sequence with atom numbers
     pub coord: Vec<CoordVec>,  // Cartesian coordinates
-    pub bond_num: usize,  // Number of bonds
+    pub nbond: usize,  // Number of bonds
     pub bonds: Vec<Bond>,  // Bonds
     pub etot_str: f64,  // Total Stretching energy
-    pub angle_num: usize,  // Number of angles
+    pub nangle: usize,  // Number of angles
     pub angles: Vec<Angle>,  // Angles
     pub etot_bend: f64,  // Total Bending energy
-    pub dihedral_num: usize,  // Number of dihedral angles
+    pub ndihedral: usize,  // Number of dihedral angles
     pub dihedrals: Vec<Dihedral>,  // Dihedral angles
     pub etot_tor: f64,  // Total Torsion energy
     pub nintl: usize,  // Number of internal coordinates
@@ -230,13 +230,13 @@ impl Geom {
             atoms: Vec::new(),
             atoms_idx: Vec::new(),
             coord: Vec::new(),
-            bond_num: 0usize,
+            nbond: 0usize,
             bonds: Vec::new(),
             etot_str: 0.0f64,
-            angle_num: 0usize,
+            nangle: 0usize,
             angles: Vec::new(),
             etot_bend: 0.0f64,
-            dihedral_num: 0usize,
+            ndihedral: 0usize,
             dihedrals: Vec::new(),
             etot_tor: 0.0f64,
             nintl: 0usize,
@@ -261,7 +261,8 @@ impl Geom {
         // we only consider the first two numbers
         let mut iter = line1.split_whitespace();
         geom.natm = iter.next().unwrap().parse::<usize>().unwrap();
-        geom.bond_num = iter.next().unwrap().parse::<usize>().unwrap();
+        geom.nbond = iter.next().unwrap().parse::<usize>().unwrap();
+        geom.c_number = iter.next().unwrap().parse::<usize>().unwrap();
 
 
         // read atoms
@@ -279,7 +280,7 @@ impl Geom {
 
 
         // read bonds
-        for _ in 0..geom.bond_num {
+        for _ in 0..geom.nbond {
             let line = reader.next().unwrap().unwrap();
             let mut iter = line.split_whitespace();
             let atm1 = iter.next().unwrap().parse::<usize>().unwrap();
@@ -295,11 +296,11 @@ impl Geom {
 
         self.atoms_idx = data::elems_to_idx(&self.atoms);
 
-        for i in 0..self.natm {
-            if self.atoms_idx[i] == 6 {
-                self.c_number += 1;
-            }
-        }
+        // for i in 0..self.natm {
+        //     if self.atoms_idx[i] == 6 {
+        //         self.c_number += 1;
+        //     }
+        // }
 
         // build bonds
         for bond in &mut self.bonds {
@@ -314,7 +315,7 @@ impl Geom {
         // build angles
         let angle_table = self.get_angle_table();
 
-        self.angle_num = angle_table.len();
+        self.nangle = angle_table.len();
         for atms in angle_table {
             let mut angle = Angle::from(atms);
             angle.get_angle(&self.coord);
@@ -328,7 +329,7 @@ impl Geom {
         // build dihedrals
         let dihedral_table = self.get_dihedral_table();
 
-        self.dihedral_num = dihedral_table.len();
+        self.ndihedral = dihedral_table.len();
         for atms in dihedral_table {
             let mut dihedral = Dihedral::from(atms);
             dihedral.get_dihedral(&self.coord);
@@ -349,7 +350,7 @@ impl Geom {
         }
 
         self.e_tot = self.etot_str + self.etot_bend + self.etot_tor + self.etot_vdw;
-        self.nintl = self.bond_num + self.angle_num + self.dihedral_num;
+        self.nintl = self.nbond + self.nangle + self.ndihedral;
 
 
     }
@@ -419,7 +420,7 @@ impl Geom {
         info!("\nAtoms and coordinates (in Angstrom):");
         self.formated_output_coord("info");
         info!("\nNumber of coordinates:");
-        info!("Stretching: {}  Bending: {}  Torsion: {}", self.bond_num, self.angle_num, self.dihedral_num);
+        info!("Stretching: {}  Bending: {}  Torsion: {}", self.nbond, self.nangle, self.ndihedral);
         info!("Internal: {}  Cartesian: {}", self.nintl, 3*self.natm);
         info!("\nPotential energy at input structure:");
         info!("{:-10.6} kcal/mol", self.e_tot);  //potential energy
@@ -624,6 +625,7 @@ impl Geom {
         MatFull::from_vec([self.nintl, 1], intl_coord)
     }
 
+    /// Convert Vec\<CoordVec\> to MatFull\<f64\>
     pub fn to_car_coord(&self) -> MatFull<f64> {
         let car_coord = self.coord.iter().map(|x| [x.x, x.y, x.z]).flatten().collect();
         MatFull::from_vec([3*self.natm, 1], car_coord)
