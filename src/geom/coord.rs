@@ -1,8 +1,11 @@
-use core::f64;
+//! Cartesian coordinate structure,
+//! including functions for coordinate operations
 
+use core::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use forward_ref::{forward_ref_binop, forward_ref_op_assign};
 
+/// Coordinate vector for coordinate calculations
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct CoordVec {
     pub x: f64,
@@ -11,6 +14,7 @@ pub struct CoordVec {
 }
 
 impl CoordVec {
+    /// Create a zero `CoordVec`
     pub fn new() -> CoordVec {
         CoordVec {
             x: 0.0,
@@ -19,6 +23,7 @@ impl CoordVec {
         }
     }
 
+    /// Create a `CoordVec` from an array
     pub fn from(vec: &[f64;3]) -> CoordVec {
         CoordVec {
             x: vec[0],
@@ -28,11 +33,12 @@ impl CoordVec {
     }
 
     #[inline]
+    /// Calculate the distance between two `CoordVec`
     pub fn distance(&self, other: &CoordVec) -> f64 {
         ((self.x-other.x).powi(2) + (self.y-other.y).powi(2) + (self.z-other.z).powi(2)).sqrt()
     }
 
-    /// Return the cross product of two vectors
+    /// Return the cross product of two vectors \
     /// Note: Check if the CoordVec is a vector or a point
     #[inline]
     pub fn cross(&self, other: &CoordVec) -> CoordVec {
@@ -43,20 +49,20 @@ impl CoordVec {
         }
     }
 
-    /// Return the dot product of two vectors
+    /// Return the dot product of two vectors \
     /// Note: Check if the CoordVec is a vector or a point
     #[inline]
     pub fn dot(&self, other: &CoordVec) -> f64 {
         self.x*other.x + self.y*other.y + self.z*other.z
     }
 
-    /// Return the norm of a vector
+    /// Return the norm of a vector |v|
     #[inline]
     pub fn norm(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
     
-    /// Return the square of the norm of a vector v**2
+    /// Return the square of the norm of a vector v<sup>2</sup>
     #[inline]
     pub fn square(&self) -> f64 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
@@ -77,6 +83,7 @@ impl CoordVec {
     }
 
     #[inline]
+    /// Convert `CoordVec` to an array
     pub fn to_array(&self) -> [f64;3] {
         [self.x, self.y, self.z]
     }
@@ -84,7 +91,6 @@ impl CoordVec {
 }
 
 // Add
-
 impl Add for CoordVec {
     type Output = Self;
 
@@ -112,7 +118,6 @@ impl AddAssign for CoordVec {
 forward_ref_op_assign!(impl AddAssign, add_assign for CoordVec, CoordVec);
 
 // Sub
-
 impl Sub for CoordVec {
     type Output = Self;
 
@@ -139,6 +144,7 @@ impl SubAssign for CoordVec {
 
 forward_ref_op_assign!(impl SubAssign,sub_assign for CoordVec, CoordVec);
 
+// Mul
 
 impl MulAssign<f64> for CoordVec
 {
@@ -177,6 +183,8 @@ impl Mul<f64> for CoordVec
     }
 }
 
+// Div
+
 impl DivAssign<f64> for CoordVec
 {
     #[inline]
@@ -214,13 +222,12 @@ impl Neg for CoordVec
 }
 
 
-
 /// Get dihedral angle for atom 1, 2, 3, 4 in degrees
-/// 
+/// ```
 ///           3 - 4
 ///         /
 ///   1 - 2
-/// 
+/// ```
 pub fn get_dihedral_deg(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec, atm4: &CoordVec) -> f64 {
     let vec1 = atm2 - atm1;
     let vec2 = atm3 - atm2;
@@ -234,28 +241,26 @@ pub fn get_dihedral_deg(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec, atm4:
 
 }
 
-/// Get dihedral angle for atom 1, 2, 3, 4 in radians
-/// 
-///           3 - 4
-///         /
-///   1 - 2
-/// 
-pub fn get_dihedral_rad(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec, atm4: &CoordVec) -> f64 {
-    let vec1 = atm2 - atm1;
-    let vec2 = atm3 - atm2;
-    let vec3 = atm4 - atm3;
-    let t = vec1.cross(&vec2);
-    let u = vec2.cross(&vec3);
-    let v = t.cross(&u);
-    let cosa = t.dot(&u)/(t.norm()*u.norm());
-    let sina = vec2.dot(&v)/(vec2.norm()*t.norm()*u.norm());
-    (sina).atan2(cosa)
-}
+// /// Get dihedral angle for atom 1, 2, 3, 4 in radians
+// /// ```
+// ///           3 - 4
+// ///         /
+// ///   1 - 2
+// /// ```
+// pub fn get_dihedral_rad(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec, atm4: &CoordVec) -> f64 {
+//     let vec1 = atm2 - atm1;
+//     let vec2 = atm3 - atm2;
+//     let vec3 = atm4 - atm3;
+//     let t = vec1.cross(&vec2);
+//     let u = vec2.cross(&vec3);
+//     let v = t.cross(&u);
+//     let cosa = t.dot(&u)/(t.norm()*u.norm());
+//     let sina = vec2.dot(&v)/(vec2.norm()*t.norm()*u.norm());
+//     (sina).atan2(cosa)
+// }
 
 
-
-/// Get bond angle for atom 1, 2, 3
-/// 
+/// Get bond angle for atom 1, 2, 3 \
 /// Note: atom 2 is the central atom
 pub fn get_angle(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec) -> f64 {
 
@@ -265,7 +270,7 @@ pub fn get_angle(atm1: &CoordVec, atm2: &CoordVec, atm3: &CoordVec) -> f64 {
 }
 
 
-/// format Vec\<CoordVec\> from Vec\<f64\>
+/// format `Vec<CoordVec>` from `Vec<f64>`
 pub fn format_coord(coord: Vec<f64>) -> Vec<CoordVec> {
     if coord.len() % 3 != 0 {
         panic!("The length of the coordinate should be a multiple of 3");

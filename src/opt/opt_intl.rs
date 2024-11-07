@@ -1,13 +1,11 @@
-use std::iter::Cycle;
+//! Internal coordinate optimization module
 
 use log::{debug, info, trace, warn};
-use serde::de;
-
 use crate::geom::coord::{format_coord, CoordVec};
 use crate::matrix::mat_blas_lapack::{mat_dgemm, mat_dsyev};
 use crate::matrix::MatFull;
 use crate::mol::Molecule;
-use crate::data::MAX_STEP_SIZE;
+use crate::utils::constant::MAX_STEP_SIZE;
 use crate::utils::{formated_output_vec, rms, dihedral_diff_check_rad};
 
 #[derive(Clone, Debug)]

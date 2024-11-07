@@ -1,10 +1,26 @@
 
+//! Molecule struct and its implementation. 
+//! 
+//! The `Molecule` struct is used to store the geometry of the molecule and its analytical gradient.
+
 #![allow(non_snake_case)]
 
-use crate::{data, geom::{AngleType, BondType, Geom}, matrix::MatFull};
-use data::{A0_CCC, A0_XCX, Kb_CC, Kb_CH, Ka_CCC, Ka_XCX, N_XCCX, A_XCCX, R0_CC, R0_CH, SIGMA_C, SIGMA_H, EPSILON_C, EPSILON_H};
+use crate::geom::Geom;
+use crate::geom::bond::BondType;
+use crate::geom::angle::AngleType;
+use crate::matrix::MatFull;
+use crate::utils::constant::{A0_CCC, A0_XCX, Kb_CC, Kb_CH, Ka_CCC, Ka_XCX, N_XCCX, A_XCCX, R0_CC, R0_CH, SIGMA_C, SIGMA_H, EPSILON_C, EPSILON_H};
 use log::{debug, info, trace};
 
+/// Molecule structure
+/// # Fields:
+/// * `geom`: Geometry
+/// * `B_mat`: Wilson B matrix
+/// * `grad_str`: Gradient of stretching energy
+/// * `grad_bend`: Gradient of bending energy
+/// * `grad_tors`: Gradient of torsional energy
+/// * `grad_vdw`: Gradient of VDW energy
+/// * `grad_tot`: Gradient of total energy
 #[derive(Debug, Clone)]
 pub struct Molecule {
     pub geom: Geom,
@@ -18,6 +34,7 @@ pub struct Molecule {
 
 impl Molecule {
 
+    /// Create a new Molecule from `Geom`
     pub fn from(geom: Geom) -> Molecule {
         let natm = geom.natm;
         let n_intl = geom.nbond + geom.nangle + geom.ndihedral;
@@ -32,6 +49,7 @@ impl Molecule {
         }
     }
 
+    /// Build the molecule, calculating the B matrix and the gradients
     pub fn build(&mut self) {
         self.get_B_mat();
         self.get_g_str(); 
@@ -41,6 +59,7 @@ impl Molecule {
         self.get_g_tot();
     }
 
+    /// Erase the previous gradients and calculate again
     pub fn update(&mut self) {
         self.B_mat.reset();
         self.grad_bend.reset();
@@ -77,9 +96,9 @@ impl Molecule {
     //     b1/x2     .
     //      ...
     //     b1/zn    ...        dn/zn
-    /// Calculate the Wilson B matrix [nx, nq]
-    /// nx: number of cartesian coordinates
-    /// nq: number of internal coordinates
+    /// Calculate the Wilson B matrix `[nx, nq]` \
+    /// `nx`: number of cartesian coordinates \
+    /// `nq`: number of internal coordinates
     #[inline]
     fn get_B_mat(&mut self) {
         // partial bond to partial cartesian
@@ -140,7 +159,6 @@ impl Molecule {
             
         }
 
-
     }
 
 
@@ -170,6 +188,7 @@ impl Molecule {
     }
 
     #[inline]
+    /// Get the gradient of the bending energy wrt the coordinates
     fn get_g_bend(&mut self) {
         for ai in 0..self.geom.nangle {
             let angle = &self.geom.angles[ai];
@@ -196,9 +215,9 @@ impl Molecule {
         }
 
     }
-    
 
     #[inline]
+    /// Get the gradient of the torsional energy wrt the coordinates
     fn get_g_tors(&mut self) {
         for di in 0..self.geom.ndihedral {
             let dihedral = &self.geom.dihedrals[di];
@@ -216,9 +235,9 @@ impl Molecule {
         }
         
     }
-
     
     #[inline]
+    /// Get the gradient of the VDW energy wrt the coordinates
     fn get_g_vdw(&mut self) {
         
         let Aij_CC = 16384.0*SIGMA_C.powi(12);
@@ -260,12 +279,12 @@ impl Molecule {
     }
 
     #[inline]
+    /// Get the total gradient
     fn get_g_tot(&mut self) {
         self.grad_tot = self.grad_str.clone();
         self.grad_tot += &self.grad_bend;
         self.grad_tot += &self.grad_tors;
         self.grad_tot += &self.grad_vdw;
-
     }
 
 }

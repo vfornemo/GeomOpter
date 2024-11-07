@@ -1,5 +1,4 @@
 mod mol;
-mod data;
 mod geom;
 mod utils;
 mod matrix;
@@ -58,10 +57,10 @@ fn main() {
 
     info!("\n**************** Summary ****************");
 
-    info!("Time Usage: {:.2} s", t_tot);
-    info!("Initialization time: {:.2} s", t_init);
-    // info!("Cartesian Optimization time: {:.2} s", t_opt);
-    info!("Internal Optimization time: {:.2} s", t_opt_intl);
+    info!("Time Usage: {:.4} s", t_tot);
+    info!("Initialization time: {:.4} s", t_init);
+    // info!("Cartesian Optimization time: {:.4} s", t_opt);
+    info!("Internal Optimization time: {:.4} s", t_opt_intl);
 
 
 }

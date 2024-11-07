@@ -2,13 +2,7 @@ use blas::dgemm;
 use lapack::dsyev;
 use crate::matrix::MatFull;
 
-/// Matrix multiplication
-/// 
-/// C := alpha*op( A )*op( B ) + beta*C,
-/// 
-/// opa: 'N'/'n'(normal) or 'T'/'t'(transpose) for A
-/// 
-/// opb: 'N'/'n'(normal) or 'T'/'t'(transpose) for B
+/// BLAS dgemm 
 fn _dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, mat_c: &'a mut MatFull<f64>, opa: char, opb: char, alpha: f64, beta: f64) {	
 
     let size_check = match (&opa, &opb) {
@@ -52,13 +46,12 @@ fn _dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, mat_c: &'a mut M
 
 }
 
-/// Matrix multiplication
-/// 
-/// C := alpha*op( A )*op( B ) + beta*C,
-/// 
-/// opa: 'N'/'n'(normal) or 'T'/'t'(transpose) for A
-/// 
-/// opb: 'N'/'n'(normal) or 'T'/'t'(transpose) for B
+/// Matrix multiplication 
+/// ```text
+/// C := alpha*op( A )*op( B ) + beta*C, 
+/// ```
+/// opa: `'N'/'n'`(normal) or `'T'/'t'`(transpose) for A \
+/// opb: `'N'/'n'`(normal) or `'T'/'t'`(transpose) for B \
 pub fn mat_dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, opa: char, opb: char, alpha: f64, beta: f64) -> MatFull<f64> {
     let new_size = match (&opa, &opb) {
         ('N', 'N') => [mat_a.size[0], mat_b.size[1]],
@@ -79,9 +72,8 @@ pub fn mat_dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, opa: char
 }
 
 
-/// Calculate the eigenvalues and eigenvectors of a real symmetric matrix
-/// 
-/// jobz: 'N'/'n' (eigenvalues only) or 'V'/'v' (eigenvalues and eigenvectors)
+/// Calculate the eigenvalues and eigenvectors of a real symmetric matrix \
+/// jobz: `'N'/'n'` (eigenvalues only) or `'V'/'v'` (eigenvalues and eigenvectors)
 pub fn mat_dsyev<'a>(mat_a: &'a MatFull<f64>, jobz: char) -> (Option<MatFull<f64>>, Vec<f64>, i32) {
     if mat_a.size[0] != mat_a.size[1] {
         panic!("Error in _dsyev: not a symmetric matrix: {:?}", mat_a.size);

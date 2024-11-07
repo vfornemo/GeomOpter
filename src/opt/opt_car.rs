@@ -1,12 +1,22 @@
+//! Cartesian coordinate optimization module
+
 #![allow(non_snake_case)]
 
 use crate::geom::coord::{format_coord, CoordVec};
 use crate::utils::rms;
 use crate::{matrix::MatFull, mol::Molecule};
-use crate::data::WOLFE_C1;
+use crate::utils::constant::WOLFE_C1;
 use log::{debug, info, trace, warn};
 use crate::matrix::mat_blas_lapack::mat_dgemm;
 
+/// Cartesian optimization structure
+/// # Fields:
+/// * `mol`: Molecule
+/// * `inv_hess`: Inverse Hessian
+/// * `p_k`: p_k
+/// * `alpha`: alpha
+/// * `y_k`: y_k
+/// * `grms`: gradient RMS
 #[derive(Clone, Debug)]
 pub struct OptCar {
     pub mol: Molecule,

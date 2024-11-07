@@ -1,22 +1,30 @@
+//! Basic matrix struct and operations
+//! # Modules:
+//! - [`self`] - Basic matrix operations
+//! - [`mat_blas_lapack`] - BLAS and LAPACK operations
+
 pub mod mat_blas_lapack;
 
 use std::fmt::Debug;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use log::{debug, info, trace};
 
-/// Column major matrix
-/// 
-/// Example:
-/// size: [2,3]
-/// data: [1,2,3,4,5,6]
-/// 
-/// 1 3 5
-/// 
-/// 2 4 6
-/// 
+/// Column major matrix 
+/// # Fields:
+/// - `size`: `[usize;2]`, row and column of the matrix 
+/// - `data`: `Vec<T>`, data vector of the matrix 
+/// # Example:
+/// - `size`: `[2,3]`  
+/// - `data`: `[1,2,3,4,5,6]` 
+/// ```
+/// |1 3 5| 
+/// |2 4 6|
+/// ```
 #[derive(Debug, Clone)]
 pub struct MatFull<T> {
+    /// row and column of the matrix
     pub size: [usize;2],
+    /// data vector of the matrix
     pub data: Vec<T>,
 }
 
@@ -24,7 +32,7 @@ pub struct MatFull<T> {
 impl <T> MatFull<T> 
     where T: Copy + Clone + Debug + PartialEq
 {
-
+    /// Create a new matrix with empty data
     pub fn new() -> MatFull<T> {
         MatFull {
             size: [0,0],
@@ -32,6 +40,7 @@ impl <T> MatFull<T>
         }
     }
 
+    /// Create a new matrix with a given size and data vector
     pub fn from_vec(size: [usize;2], data: Vec<T>) -> MatFull<T> {
         MatFull {
             size,
@@ -39,48 +48,54 @@ impl <T> MatFull<T>
         }
     }
 
-    #[inline]
+    /// Reshape the matrix with the given size
     pub fn reshape(&mut self, size: [usize;2]) {
         self.size = size;
     }
 
-    #[inline]
+    /// Get the element at the given index `(i,j)`
     pub fn get_ij(&self, i: usize, j: usize) -> &T {
         &self.data[j*self.size[0] + i]
     }
 
-    #[inline]
+    /// Get the mutable element at the given index `(i,j)`
     pub fn get_mut_ij(&mut self, i: usize, j: usize) -> &mut T {
         &mut self.data[j*self.size[0] + i]
     }
 
     #[inline]
+    /// Return an iterator over the `i`th row
     pub fn iter_row(&self, i: usize) -> impl Iterator<Item = T> + '_  {
         self.data.iter().enumerate().filter(move |(idx,_x)| idx % self.size[0] == i)
                 .map(|(_idx,x)| *x)
     }
 
     #[inline]
+    /// Return an iterator over the `j`th column
     pub fn iter_col(&self, j: usize) -> std::slice::Iter<T> {
         self.data[j*self.size[0]..(j+1)*self.size[0]].iter()
     }
 
     #[inline]
+    /// Return a mutable iterator over the `j`th column
     pub fn iter_col_mut(&mut self, j: usize) -> std::slice::IterMut<T> {
         self.data[j*self.size[0]..(j+1)*self.size[0]].iter_mut()
     }
 
     #[inline]
+    /// Return an iterator over the `j`th column from `start` to `end`
     pub fn iter_col_range(&self, j: usize, start: usize, end: usize) -> std::slice::Iter<T> {
         self.data[j*self.size[0] + start..j*self.size[0] + end].iter()
     }
 
     #[inline]
+    /// Return a mutable iterator over the `j`th column from `start` to `end`
     pub fn iter_col_range_mut(&mut self, j: usize, start: usize, end: usize) -> std::slice::IterMut<T> {
         self.data[j*self.size[0] + start..j*self.size[0] + end].iter_mut()
     }
 
     #[inline]
+    /// Transpose the matrix from `[i, j]` to `[j, i]`
     pub fn transpose(&self) -> MatFull<T> {
         let mut data = Vec::new();
         for i in 0..self.size[0] {
@@ -94,7 +109,7 @@ impl <T> MatFull<T>
         }
     }
 
-
+    /// Formated print for matrix
     pub fn formated_output(&self) {
         let mut output = String::new();
         for i in 0..self.size[0] {
@@ -108,121 +123,122 @@ impl <T> MatFull<T>
         println!("{}", output);
     }
     
-    // #[inline]
-    // pub fn mat_mul(&self, other: &MatFull<T>, op_a: char, op_b: char) -> MatFull<T> 
-    //     where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
-    // {
-    //     if op_a == 't' && op_b == 'n' {
-    //         self.mat_mul_tn(other)
-    //     } else if op_a == 'n' && op_b == 't' {
-    //         self.mat_mul_nt(other)
-    //     } else if op_a == 't' && op_b == 't' {
-    //         self.mat_mul_tt(other)
-    //     } else {
-    //         self.mat_mul_nn(other)
-    //     }
+    #[inline]
+    #[deprecated="Use `mat_blas_lapack::mat_dgemm` instead"]
+    pub fn mat_mul(&self, other: &MatFull<T>, op_a: char, op_b: char) -> MatFull<T> 
+        where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
+    {
+        if op_a == 't' && op_b == 'n' {
+            self.mat_mul_tn(other)
+        } else if op_a == 'n' && op_b == 't' {
+            self.mat_mul_nt(other)
+        } else if op_a == 't' && op_b == 't' {
+            self.mat_mul_tt(other)
+        } else {
+            self.mat_mul_nn(other)
+        }
 
-    // }
+    }
 
-    // #[inline]
-    // fn mat_mul_nn(&self, other: &MatFull<T>) -> MatFull<T> 
-    // where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
+    #[inline]
+    fn mat_mul_nn(&self, other: &MatFull<T>) -> MatFull<T> 
+    where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
     
-    // {
+    {
         
-    //     if self.size[1] != other.size[0] {
-    //         panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
-    //     }
-    //     let size_new = [self.size[0], other.size[1]];
-    //     let mut data = Vec::new();
-    //     for j in 0..other.size[1] {
-    //         for i in 0..self.size[0] {
-    //             data.push(self.iter_row(i).zip(other.iter_col(j)).map(|(x,y)| x* *y).sum())
-    //         }
-    //     }
+        if self.size[1] != other.size[0] {
+            panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
+        }
+        let size_new = [self.size[0], other.size[1]];
+        let mut data = Vec::new();
+        for j in 0..other.size[1] {
+            for i in 0..self.size[0] {
+                data.push(self.iter_row(i).zip(other.iter_col(j)).map(|(x,y)| x* *y).sum())
+            }
+        }
 
-    //     MatFull {
-    //         size: size_new,
-    //         data,
-    //     }
-    // }
+        MatFull {
+            size: size_new,
+            data,
+        }
+    }
 
-    // #[inline]
-    // fn mat_mul_tn(&self, other: &MatFull<T>) -> MatFull<T> 
-    // where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
+    #[inline]
+    fn mat_mul_tn(&self, other: &MatFull<T>) -> MatFull<T> 
+    where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
     
-    // {
-    //     if self.size[0] != other.size[0] {
-    //         panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
-    //     }
-    //     let size_new = [self.size[1], other.size[1]];
-    //     let mut data = Vec::new();
-    //     for j in 0..other.size[1] {
-    //         for i in 0..self.size[1] {
-    //             data.push(self.iter_col(i).zip(other.iter_col(j)).map(|(x,y)| *x* *y).sum())
-    //         }
-    //     }
+    {
+        if self.size[0] != other.size[0] {
+            panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
+        }
+        let size_new = [self.size[1], other.size[1]];
+        let mut data = Vec::new();
+        for j in 0..other.size[1] {
+            for i in 0..self.size[1] {
+                data.push(self.iter_col(i).zip(other.iter_col(j)).map(|(x,y)| *x* *y).sum())
+            }
+        }
 
-    //     MatFull {
-    //         size: size_new,
-    //         data,
-    //     }
-    // }
+        MatFull {
+            size: size_new,
+            data,
+        }
+    }
 
-    // #[inline]
-    // fn mat_mul_nt(&self, other: &MatFull<T>) -> MatFull<T> 
-    // where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
+    #[inline]
+    fn mat_mul_nt(&self, other: &MatFull<T>) -> MatFull<T> 
+    where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
     
-    // {
-    //     if self.size[1] != other.size[1] {
-    //         panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
-    //     }
-    //     let size_new = [self.size[0], other.size[0]];
-    //     let mut data = Vec::new();
-    //     for j in 0..other.size[0] {
-    //         for i in 0..self.size[0] {
-    //             data.push(self.iter_row(i).zip(other.iter_row(j)).map(|(x,y)| x* y).sum())
-    //         }
-    //     }
+    {
+        if self.size[1] != other.size[1] {
+            panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
+        }
+        let size_new = [self.size[0], other.size[0]];
+        let mut data = Vec::new();
+        for j in 0..other.size[0] {
+            for i in 0..self.size[0] {
+                data.push(self.iter_row(i).zip(other.iter_row(j)).map(|(x,y)| x* y).sum())
+            }
+        }
 
-    //     MatFull {
-    //         size: size_new,
-    //         data,
-    //     }
-    // }
+        MatFull {
+            size: size_new,
+            data,
+        }
+    }
 
-    // #[inline]
-    // fn mat_mul_tt(&self, other: &MatFull<T>) -> MatFull<T> 
-    // where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
+    #[inline]
+    fn mat_mul_tt(&self, other: &MatFull<T>) -> MatFull<T> 
+    where T: Add<Output = T> + Mul<Output = T> + Copy + Clone + Debug + PartialEq + std::iter::Sum
     
-    // {
-    //     if self.size[0] != other.size[1] {
-    //         panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
-    //     }
-    //     let size_new = [self.size[1], other.size[0]];
-    //     let mut data = Vec::new();
-    //     for j in 0..other.size[0] {
-    //         for i in 0..self.size[1] {
-    //             data.push(self.iter_col(i).zip(other.iter_row(j)).map(|(x,y)| *x*y).sum())
-    //         }
-    //     }
+    {
+        if self.size[0] != other.size[1] {
+            panic!("Matrix size mismatch: {:?} != {:?}", self.size, other.size);
+        }
+        let size_new = [self.size[1], other.size[0]];
+        let mut data = Vec::new();
+        for j in 0..other.size[0] {
+            for i in 0..self.size[1] {
+                data.push(self.iter_col(i).zip(other.iter_row(j)).map(|(x,y)| *x*y).sum())
+            }
+        }
 
-    //     MatFull {
-    //         size: size_new,
-    //         data,
-    //     }
-    // }
-
+        MatFull {
+            size: size_new,
+            data,
+        }
+    }
 
     
 }
 
 impl MatFull<f64> {
 
-    /// Formated print for matrix
-    /// Input:
-    /// op: 't' for transpose, 'n' for normal
-    /// precision: number of decimal places
+    /// Formated print for [`MatFull<f64>`]
+    /// # Input:
+    /// - `op`: `'t'` for transpose, `'n'` for normal
+    /// - `precision`: number of decimal places
+    /// - `print_level`: log level, `debug`, `info`, `trace`, `off`, any other string for stdout
     /// 
     pub fn formated_output_f64(&self, op: char, precision: usize, print_level: &str) {
         let mut output = String::new();
@@ -261,6 +277,7 @@ impl MatFull<f64> {
         self.data.iter_mut().for_each(|x| *x = 0.0);
     }
     
+    /// Create an identity matrix with the given order and value
     pub fn eye(order: usize, value: f64) -> MatFull<f64> {
         let mut data = vec![0.0; order*order];
         data.iter_mut().step_by(order+1).for_each(|x| *x = value);
@@ -283,6 +300,7 @@ impl MatFull<f64> {
         }
     }
 
+    /// Create a new matrix with the given size and value
     pub fn new_with_value(size: [usize;2], value: f64) -> MatFull<f64> {
         MatFull {
             size,
@@ -515,12 +533,6 @@ mod test {
 
     #[test]
     fn test_mat_ops() {
-        let size = [3,2];
-        let data = vec![1,2,3,4,5,6];
-        let mut mat1 = MatFull::from_vec(size, data);
-        let size = [2,2];
-        let data = vec![1,2, 3, 4];
-        let mat2 = MatFull::from_vec(size, data);
         let mut mat4 = MatFull::from_vec([3,2], vec![1.0,2.0,3.0,4.0,5.0,6.0]);
         mat4 *= 2.0;
         mat4.formated_output();

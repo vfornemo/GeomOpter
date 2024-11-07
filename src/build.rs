@@ -1,4 +1,4 @@
-// Example custom build script.
+// Custom build script.
 fn main() {
     println!("cargo:rustc-link-lib=openblas");
     

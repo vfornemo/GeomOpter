@@ -1,228 +1,102 @@
+//! Basic structures for molecular geometry and energy calculation
+//! 
+//! 
+//! 
+//! # Modules:
+//! - [`self`] - Molecular geometry structure [`Geom`] and related functions
+//! - [`coord`] - Cartesian coordinate structure, including functions for coordinate operations 
+//! - [`bond`] - Bond structure, including functions for bond calculation 
+//! - [`angle`] - Angle structure, including functions for angle calculation 
+//! - [`dihedral`] - Dihedral angle structure, including functions for dihedral angle calculation
+
 #![allow(non_snake_case)]
 
-
 pub mod coord;
+pub mod bond;
+pub mod angle;
+pub mod dihedral;
+
+use bond::{Bond, BondType};
+use angle::Angle;
+use dihedral::Dihedral;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use coord::CoordVec;
-
-use crate::data::{self};
 use crate::io::Input;
 use crate::matrix::MatFull;
+use crate::utils;
 use std::collections::VecDeque;
 use log::{debug, info, trace};
 
-#[derive(Debug, Clone)]
-pub enum BondType {
-    CH,
-    CC,
-    HH,
-    XX,
-}
 
-#[derive(Debug, Clone)]
-pub struct Bond {
-    pub atms: [usize;2],
-    pub bond_type: BondType,
-    pub bond_length: f64,
-    pub e_str: f64,  // stretching energy (or vdw energy for atom pairs)
-    pub is_LJ_pair: bool,
-}
-
-
-impl Bond {
-    fn new() -> Bond {
-        Bond {
-            atms: [0usize;2],
-            bond_type: BondType::XX,
-            bond_length: 0.0f64,
-            e_str: 0.0f64,
-            is_LJ_pair: false,
-        }
-    }
-    
-    fn from(atm1: usize, atm2: usize) -> Bond {
-        Bond {
-            atms: [atm1, atm2],
-            bond_type: BondType::XX,
-            bond_length: 0.0f64,
-            e_str: 0.0f64,
-            is_LJ_pair: false,
-        }
-    }
-
-    fn get_bond_type(&mut self, atoms_idx: &Vec<usize>) {
-        let mut c_num = 0;
-        for i in 0..2 {
-            if atoms_idx[self.atms[i]-1] == 6 {
-                c_num += 1;
-            }
-        }
-
-        if c_num == 2 {
-            self.bond_type = BondType::CC;
-        } else if c_num == 1 {
-            self.bond_type = BondType::CH;
-        } else {
-            self.bond_type = BondType::HH;
-        }
-    }
-
-    fn get_bond_length(&mut self, coord: &Vec<CoordVec>) {
-        self.bond_length = coord[self.atms[0]-1].distance(&coord[self.atms[1]-1]);
-    }
-
-    /// Calculate stretching energy of a bond
-    fn get_e_str(&mut self) {
-        self.e_str = match self.bond_type {
-            BondType::CC => {data::Kb_CC*(self.bond_length - data::R0_CC).powi(2)},
-            BondType::CH => {data::Kb_CH*(self.bond_length - data::R0_CH).powi(2)},
-            BondType::HH => 0.0,
-            BondType::XX => 0.0,
-        }
-
-    }
-
-    fn get_e_vdw(&mut self) {
-        let epsilon_CH = (data::EPSILON_C*data::EPSILON_H).sqrt();
-        let sigma_CH = 2.0*(data::SIGMA_C*data::SIGMA_H).sqrt();
-        let sigma_HH = 2.0*data::SIGMA_H;
-        let sigma_CC = 2.0*data::SIGMA_C;
-        if self.is_LJ_pair {
-            self.e_str = match self.bond_type {
-                BondType::CH => {4.0*epsilon_CH*((sigma_CH/self.bond_length).powi(12) - (sigma_CH/self.bond_length).powi(6))},
-                BondType::HH => {4.0*data::EPSILON_H*((sigma_HH/self.bond_length).powi(12) - (sigma_HH/self.bond_length).powi(6))},
-                BondType::CC => {4.0*data::EPSILON_C*((sigma_CC/self.bond_length).powi(12) - (sigma_CC/self.bond_length).powi(6))},
-                BondType::XX => 0.0,
-            }
-        }
-
-    }
-
-    
-}
-
-
-#[derive(Debug, Clone)]
-pub enum AngleType {
-    CCC,
-    XCX,
-    XXX,
-}
-
-
-#[derive(Debug, Clone)]
-pub struct Angle {
-    pub atms: [usize;3],
-    pub angle_type: AngleType,
-    pub angle: f64,
-    pub e_bend: f64,  // bending energy
-}
-
-impl Angle {
-    fn new() -> Angle {
-        Angle {
-            atms: [0usize;3],
-            angle_type: AngleType::XXX,
-            angle: 0.0f64,
-            e_bend: 0.0f64,
-        }
-    }
-
-    fn from(atms: [usize;3]) -> Angle {
-        Angle {
-            atms,
-            angle_type: AngleType::XXX,
-            angle: 0.0f64,
-            e_bend: 0.0f64,
-        }
-    }
-
-    fn get_angle(&mut self, coord: &Vec<CoordVec>) {
-        self.angle = coord::get_angle(&coord[self.atms[0]-1], &coord[self.atms[1]-1], &coord[self.atms[2]-1]);
-    }
-
-    fn get_angle_type(&mut self, atoms_idx: &Vec<usize>) {
-        if atoms_idx[self.atms[0]-1] == 6 && atoms_idx[self.atms[1]-1] == 6 && atoms_idx[self.atms[2]-1] == 6 {
-            self.angle_type = AngleType::CCC;
-        } else {
-            self.angle_type = AngleType::XCX;
-        }
-    }
-
-    fn get_e_bend(&mut self) {
-        self.e_bend = match self.angle_type {
-            AngleType::CCC => {data::Ka_CCC*(self.angle - data::A0_CCC).to_radians().powi(2)},
-            AngleType::XCX => {data::Ka_XCX*(self.angle - data::A0_XCX).to_radians().powi(2)},
-            AngleType::XXX => 0.0,
-        }
-    }
-
-    
-}
-
-
-#[derive(Debug, Clone)]
-pub struct Dihedral {
-    pub atms: [usize;4],
-    pub dihedral: f64,
-    pub e_tor: f64,  // torsion energy
-}
-
-impl Dihedral {
-    fn new() -> Dihedral {
-        Dihedral {
-            atms: [0usize;4],
-            dihedral: 0.0f64,
-            e_tor: 0.0f64,
-        }
-    }
-
-    fn from(atms: [usize;4]) -> Dihedral {
-        Dihedral {
-            atms,
-            dihedral: 0.0f64,
-            e_tor: 0.0f64,
-        }
-    }
-
-    fn get_dihedral(&mut self, coord: &Vec<CoordVec>) {
-        self.dihedral = coord::get_dihedral_deg(&coord[self.atms[0]-1], &coord[self.atms[1]-1], &coord[self.atms[2]-1], &coord[self.atms[3]-1]);
-    }
-
-    fn get_e_tor(&mut self) {
-        self.e_tor = data::A_XCCX*(1.0 + (data::N_XCCX*self.dihedral.to_radians()).cos());
-    }
-    
-}
-
-
-
+/// Structure of a molecular geometry
+/// # Fields:
+/// * `input`: input file
+/// * `natm`: number of atoms
+/// * `atoms`: atom sequence with element symbols
+/// * `atoms_idx`: atom sequence with atom numbers
+/// * `coord`: Cartesian coordinates
+/// * `nbond`: number of bonds
+/// * `bonds`: bonds
+/// * `etot_str`: total stretching energy
+/// * `nangle`: number of angles
+/// * `angles`: angles
+/// * `etot_bend`: total bending energy
+/// * `ndihedral`: number of dihedral angles
+/// * `dihedrals`: dihedral angles
+/// * `etot_tor`: total torsion energy
+/// * `nintl`: number of internal coordinates
+/// * `c_number`: number of carbons
+/// * `neighbors`: neighboring atoms of each atom
+/// * `atm_pair`: atoms pairs for vdw calculation
+/// * `etot_vdw`: total VDW energy
+/// * `e_tot`: total potential energy
 #[derive(Debug, Clone)]
 pub struct Geom {
-    pub input: Input,  // Input file
-    pub natm: usize,  // Number of atoms
-    pub atoms: Vec<String>,  // Atom sequence with element symbols
-    pub atoms_idx: Vec<usize>,  // Atom sequence with atom numbers
-    pub coord: Vec<CoordVec>,  // Cartesian coordinates
-    pub nbond: usize,  // Number of bonds
-    pub bonds: Vec<Bond>,  // Bonds
-    pub etot_str: f64,  // Total Stretching energy
-    pub nangle: usize,  // Number of angles
-    pub angles: Vec<Angle>,  // Angles
-    pub etot_bend: f64,  // Total Bending energy
-    pub ndihedral: usize,  // Number of dihedral angles
-    pub dihedrals: Vec<Dihedral>,  // Dihedral angles
-    pub etot_tor: f64,  // Total Torsion energy
-    pub nintl: usize,  // Number of internal coordinates
-    pub c_number: usize,  // Number of carbons
-    pub neighbors: Vec<Vec<usize>>,  // Neighboring atoms of each atom
-    pub atm_pair: Vec<Bond>,  // Atoms pairs for LJ calculation
-    pub etot_vdw: f64,  // Total VDW energy
-    pub e_tot: f64,  // Total potential energy
+    /// input file
+    pub input: Input,  
+    /// number of atoms
+    pub natm: usize,
+    /// atom sequence with element symbols
+    pub atoms: Vec<String>,  
+    /// atom sequence with atom numbers
+    pub atoms_idx: Vec<usize>, 
+    /// Cartesian coordinates
+    pub coord: Vec<CoordVec>, 
+    /// number of bonds
+    pub nbond: usize,
+    /// bonds
+    pub bonds: Vec<Bond>,  
+    /// total stretching energy
+    pub etot_str: f64, 
+    /// number of angles
+    pub nangle: usize, 
+    /// angles
+    pub angles: Vec<Angle>,
+    /// total bending energy
+    pub etot_bend: f64,  
+    /// number of dihedral angles
+    pub ndihedral: usize, 
+    /// dihedral angles
+    pub dihedrals: Vec<Dihedral>, 
+    /// total torsion energy
+    pub etot_tor: f64, 
+    /// number of internal coordinates
+    pub nintl: usize,  
+    /// number of carbons
+    pub c_number: usize, 
+    /// neighboring atoms of each atom
+    pub neighbors: Vec<Vec<usize>>, 
+    /// atoms pairs for vdw calculation
+    pub atm_pair: Vec<Bond>, 
+    /// total VDW energy
+    pub etot_vdw: f64, 
+    /// total potential energy
+    pub e_tot: f64, 
 }
 
 impl Geom {
+    /// Create a new molecular geometry
     pub fn new(input: Input) -> Geom {
         Geom {
             input,
@@ -248,7 +122,7 @@ impl Geom {
         }
     }
 
-    
+    /// Create [`Geom`] structure from .mol2 file
     pub fn from_mol2(input: Input) -> Geom {
         let mut geom = Geom::new(input);
         // open file
@@ -278,7 +152,6 @@ impl Geom {
             geom.coord.push(coord);
         }
 
-
         // read bonds
         for _ in 0..geom.nbond {
             let line = reader.next().unwrap().unwrap();
@@ -292,15 +165,12 @@ impl Geom {
         geom
     }
 
+    /// Build the [`Geom`] structure, including all bonds, angles, dihedrals, and vdw interactions
+    /// as well as their energies. \
+    /// **Note**: [`Geom`] only needs to be built once. Use `update()` to update the energy.
     pub fn build(&mut self) {
 
-        self.atoms_idx = data::elems_to_idx(&self.atoms);
-
-        // for i in 0..self.natm {
-        //     if self.atoms_idx[i] == 6 {
-        //         self.c_number += 1;
-        //     }
-        // }
+        self.atoms_idx = utils::elems_to_idx(&self.atoms);
 
         // build bonds
         for bond in &mut self.bonds {
@@ -324,7 +194,6 @@ impl Geom {
             self.etot_bend += angle.e_bend;
             self.angles.push(angle);
         }
-
 
         // build dihedrals
         let dihedral_table = self.get_dihedral_table();
@@ -355,6 +224,8 @@ impl Geom {
 
     }
 
+    /// Update the energies of [`Geom`] structure \
+    /// **Note**: Use this function to update the energy for already built structure
     pub fn update(&mut self) {
         self.etot_str = 0.0;
         self.etot_bend = 0.0;
@@ -391,6 +262,7 @@ impl Geom {
 
     }
 
+    /// Calculate and gather all internal coordinates into a `MatFull<f64>` with size `[nq,1]`
     pub fn calc_intl_coord(&mut self) -> MatFull<f64> {
 
         // build bonds
@@ -410,10 +282,7 @@ impl Geom {
 
     }
 
-
     /// Print out the information of the molecular geometry
-    /// Input:
-    /// level: usize, 0 for basic info, 1 for detailed info
     pub fn logger(&self) {
    
         info!("The input file has {} atoms.", self.natm);
@@ -446,18 +315,21 @@ impl Geom {
         
     }
 
-    /// construct neighbor table for saturated hydrocarbons
-    /// 
+    /// construct neighbor table for all atoms
+    /// # Example:
+    /// ```
     ///         H3   H8
     ///    H4 - C1 - C2 - H7
     ///         H5   H6
+    /// ```
     /// Output:
+    /// ```
     /// [[2, 3, 4, 5],
     ///  [1, 6, 7, 8],
     ///  [1],
-    ///  ..
+    ///  ...
     ///  [2]]
-    /// 
+    /// ```
     fn get_neighbor(&mut self) {
 
         self.neighbors = vec![vec![]; self.natm];
@@ -483,7 +355,7 @@ impl Geom {
 
     }
 
-
+    /// Get atom pairs for vdw calculation
     pub fn get_atom_pair_table(&self) -> Vec<([usize;2], bool)> {
         let mut atm_pair = Vec::new();
         for atm in 1..self.natm+1 {
@@ -492,8 +364,9 @@ impl Geom {
         atm_pair
     }
 
-    /// Search for neighbors of at lease 3 bonds away from an atom
-    /// Level order traversal
+    /// Search for atom neighbors \
+    /// Neighbors at lease 3 bonds away from an atom are considered as LJ pairs 
+    // This is a Level order traversal algorithm
     pub fn search_LJ_neighbor(&self, atm: usize) -> Vec<([usize;2], bool)> {
         let mut neighbors = Vec::new();
         let mut depth = 1;
@@ -530,14 +403,18 @@ impl Geom {
 
 
     /// construct dihedral angle table for saturated hydrocarbons
+    /// # Example:
+    /// ```
     ///         H3   H8
     ///    H4 - C1 - C2 - H7
     ///         H5   H6
+    /// ```
     /// Output:
+    /// ```
     ///[[3, 1, 2, 8], [3, 1, 2, 7], [3, 1, 2, 6], 
     /// [4, 1, 2, 8], [4, 1, 2, 7], [4, 1, 2, 6], 
     /// [5, 1, 2, 8], [5, 1, 2, 7], [5, 1, 2, 6]]
-    /// 
+    /// ```
     pub fn get_dihedral_table(&self) -> Vec<[usize;4]> {
         let mut table = Vec::new();
         for b in self.bonds.iter() {
@@ -560,13 +437,17 @@ impl Geom {
     }
 
     /// construct angle table for saturated hydrocarbons
+    /// # Example:
+    /// ```
     ///         H3   H8
     ///    H4 - C1 - C2 - H7
     ///         H5   H6
+    /// ```
     /// Output:
+    /// ```	
     /// [[3, 1, 2], [3, 1, 4], [3, 1, 5], [4, 1, 2], [4, 1, 5], [5, 1, 2],
     ///  [8, 2, 1], [8, 2, 7], [8, 2, 6], [7, 2, 1], [7, 2, 6], [6, 2, 1]]
-    /// 
+    /// ```
     pub fn get_angle_table(&self) -> Vec<[usize;3]> {
         let mut table = Vec::new();
         for i in 0..self.natm {
@@ -582,6 +463,9 @@ impl Geom {
         table
     }
 
+    /// Print out the Cartesian coordinates
+    /// # Input:
+    /// - `print_level`: print level, `info`, `debug`, `trace`, `off`, or other strings for stdout
     pub fn formated_output_coord(&self, print_level: &str) {
 
         match print_level {
@@ -610,7 +494,7 @@ impl Geom {
     }
 
 
-
+    /// Gather all internal coordinates into a `MatFull<f64>` with size `[nq,1]`
     pub fn to_intl_coord(&self) -> MatFull<f64> {
         let mut intl_coord = Vec::new();
         for b in self.bonds.iter() {
@@ -625,7 +509,7 @@ impl Geom {
         MatFull::from_vec([self.nintl, 1], intl_coord)
     }
 
-    /// Convert Vec\<CoordVec\> to MatFull\<f64\>
+    /// Convert `Vec<CoordVec>` to `MatFull<f64>`
     pub fn to_car_coord(&self) -> MatFull<f64> {
         let car_coord = self.coord.iter().map(|x| [x.x, x.y, x.z]).flatten().collect();
         MatFull::from_vec([3*self.natm, 1], car_coord)
