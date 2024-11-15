@@ -1,0 +1,4 @@
+name = "methane"
+path = "./methane.mol2"
+calc_type = "energy"
+output = "./methane.log"

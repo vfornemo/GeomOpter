@@ -1,9 +1,12 @@
+## Name of the job
+name = "ethane_intl"
+
 ## Path of the mol2 file
-# path = "examples/cholestane.mol2"
-path = "examples/ethane.mol2"
-# path = "examples/methylcyclohexane.mol2"
-# path = "examples/methane.mol2"
-# path = "examples/isobutane.mol2"
+# path = "benchmark/examples/cholestane.mol2"
+path = "benchmark/examples/ethane.mol2"
+# path = "benchmark/examples/methylcyclohexane.mol2"
+# path = "benchmark/examples/methane.mol2"
+# path = "benchmark/examples/isobutane.mol2"
 
 ## Calculation type: "car", "intl", "energy"
 calc_type = "intl"
@@ -16,3 +19,9 @@ rms_tol = 0.001
 
 ## Cartesian Convergence tolerance
 car_conver = 0.00001
+
+## Log level
+log_level = "info"
+
+## Output file location
+output = "./ethane_intl.log"

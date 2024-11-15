@@ -157,7 +157,7 @@ mod test {
         let mat_b = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
         // timer
         let start = std::time::Instant::now();
-        let mat_c = mat_dgemm(&mat_a, &mat_b, 'n','n', 1.0, 1.0);
+        let _c = mat_dgemm(&mat_a, &mat_b, 'n','n', 1.0, 1.0);
         println!("Time elapsed in dgemm: {:?}", start.elapsed());
     }
 

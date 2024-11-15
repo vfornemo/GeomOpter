@@ -1,0 +1,4 @@
+name = "methylcyclohexane"
+path = "./methylcyclohexane.mol2"
+calc_type = "car"
+output = "./methylcyclohexane.log"

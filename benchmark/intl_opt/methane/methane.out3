@@ -15,8 +15,6 @@ Stretch, Bend, Torsion, VDW components of potential energy:
 Geometry optimization gradient RMS threshold:     0.00100000
 Initial potential energy:
     5.106778
-Initial internal coordinates:
-    1.114835    1.106818    1.132267    1.090003    1.711863    2.116405    1.913545    2.074559    1.751359    1.860847
 Wilson B Matrix at the initial structure:  10 rows of  15 elements
    1:   -0.19267     0.97763    -0.08432     0.19267    -0.97763     0.08432     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.92391    -0.34089    -0.17374     0.00000     0.00000     0.00000     0.92391     0.34089     0.17374     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -110,7 +108,7 @@ New coordinates:
       H    -0.571966     1.485191    -0.870069
       H    -0.534112     1.433800     0.916113
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.112808    1.108151    1.122933    1.098385    1.745924    2.082757    1.913738    2.047828    1.778678    1.869986
+    1.1128    1.1082    1.1229    1.0984    1.7459    2.0828    1.9137    2.0478    1.7787    1.8700
 Wilson B Matrix at the new structure:
    1:   -0.17433     0.98225    -0.06925     0.17433    -0.98225     0.06925     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.92352    -0.35203    -0.15230     0.00000     0.00000     0.00000     0.92352     0.35203     0.15230     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -137,15 +135,7 @@ Gradient in terms of the internal coordinates:
     1.965738   -1.293958    9.053418   -8.130507  -11.789074   11.754145   -0.027042    9.337072   -9.462348   -3.123228
 Old and new energies:      5.10678      3.42347 And GRMS:      10.7071
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -1.418754    0.933677   -6.533513    5.867396    2.486647   -2.228503    0.104669   -1.766132    1.988773    0.752782
-Previous structure in terms of the internal coordinates:
-    1.114835    1.106818    1.132267    1.090003    1.711863    2.116405    1.913545    2.074559    1.751359    1.860847
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.002027    0.001334   -0.009334    0.008382    0.034061   -0.033649    0.000194   -0.026731    0.027320    0.009139
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.002365    0.001556   -0.010889    0.009779    0.016578   -0.014857    0.000698   -0.011774    0.013258    0.005019
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001660   0.000005  -0.000032   0.000029  -0.000004   0.000012   0.000003   0.000010  -0.000004   0.000002
    2:   0.000005   0.001664   0.000021  -0.000019   0.000003  -0.000008  -0.000002  -0.000006   0.000002  -0.000001
    3:  -0.000032   0.000021   0.001517   0.000134  -0.000019   0.000056   0.000015   0.000045  -0.000016   0.000009
@@ -194,7 +184,7 @@ New coordinates:
       H    -0.556650     1.475606    -0.867720
       H    -0.542273     1.428757     0.924576
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.112181    1.108564    1.120046    1.100978    1.780314    2.048121    1.913700    2.020328    1.806317    1.878969
+    1.1122    1.1086    1.1200    1.1010    1.7803    2.0481    1.9137    2.0203    1.8063    1.8790
 Wilson B Matrix at the new structure:
    1:   -0.15543     0.98640    -0.05353     0.15543    -0.98640     0.05353     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.92252    -0.36329    -0.13031     0.00000     0.00000     0.00000     0.92252     0.36329     0.13031     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -221,15 +211,7 @@ Gradient in terms of the internal coordinates:
     1.526743   -1.005130    7.031996   -6.315202   -9.292694    9.436466    0.051527    7.504064   -7.456434   -2.396663
 Old and new energies:      3.42347      2.16026 And GRMS:       8.4930
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -0.438994    0.288829   -2.021422    1.815305    2.496379   -2.317679    0.078569   -1.833008    2.005914    0.726566
-Previous structure in terms of the internal coordinates:
-    1.112808    1.108151    1.122933    1.098385    1.745924    2.082757    1.913738    2.047828    1.778678    1.869986
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.000627    0.000413   -0.002888    0.002593    0.034390   -0.034636   -0.000038   -0.027500    0.027638    0.008983
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.000671    0.000441   -0.003088    0.002773    0.034320   -0.034143    0.000137   -0.027092    0.027583    0.009127
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001659   0.000005  -0.000033   0.000030   0.000001   0.000008   0.000004   0.000006   0.000001   0.000004
    2:   0.000005   0.001664   0.000022  -0.000020  -0.000001  -0.000005  -0.000002  -0.000004  -0.000000  -0.000002
    3:  -0.000033   0.000022   0.001513   0.000138   0.000005   0.000035   0.000016   0.000029   0.000003   0.000017
@@ -278,7 +260,7 @@ New coordinates:
       H    -0.541220     1.465829    -0.865153
       H    -0.550107     1.423782     0.932720
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.111614    1.108937    1.117437    1.103321    1.814401    2.013123    1.913392    1.992521    1.833720    1.887618
+    1.1116    1.1089    1.1174    1.1033    1.8144    2.0131    1.9134    1.9925    1.8337    1.8876
 Wilson B Matrix at the new structure:
    1:   -0.13630     0.98996    -0.03741     0.13630    -0.98996     0.03741     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.92088    -0.37453    -0.10823     0.00000     0.00000     0.00000     0.92088     0.37453     0.10823     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -305,15 +287,7 @@ Gradient in terms of the internal coordinates:
     1.130139   -0.744142    5.205630   -4.675048   -6.834121    7.070304    0.097782    5.632564   -5.476292   -1.712630
 Old and new energies:      2.16026      1.18897 And GRMS:       6.2665
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -0.396604    0.260988   -1.826366    1.640154    2.458573   -2.366162    0.046255   -1.871500    1.980142    0.684033
-Previous structure in terms of the internal coordinates:
-    1.112181    1.108564    1.120046    1.100978    1.780314    2.048121    1.913700    2.020328    1.806317    1.878969
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.000567    0.000373   -0.002609    0.002343    0.034087   -0.034998   -0.000307   -0.027807    0.027404    0.008649
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.000570    0.000375   -0.002623    0.002356    0.034177   -0.034985   -0.000248   -0.027777    0.027498    0.008715
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001659   0.000005  -0.000033   0.000030   0.000002   0.000007   0.000004   0.000006   0.000001   0.000004
    2:   0.000005   0.001664   0.000022  -0.000020  -0.000001  -0.000005  -0.000002  -0.000004  -0.000001  -0.000003
    3:  -0.000033   0.000022   0.001513   0.000138   0.000008   0.000034   0.000017   0.000028   0.000005   0.000018
@@ -362,7 +336,7 @@ New coordinates:
       H    -0.525533     1.455762    -0.862239
       H    -0.557729     1.418921     0.940657
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.111051    1.109308    1.114843    1.105651    1.848176    1.977776    1.912780    1.964383    1.860834    1.895930
+    1.1111    1.1093    1.1148    1.1057    1.8482    1.9778    1.9128    1.9644    1.8608    1.8959
 Wilson B Matrix at the new structure:
    1:   -0.11693     0.99292    -0.02091     0.11693    -0.99292     0.02091     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.91857    -0.38578    -0.08604     0.00000     0.00000     0.00000     0.91857     0.38578     0.08604     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -389,15 +363,7 @@ Gradient in terms of the internal coordinates:
     0.735860   -0.484642    3.389850   -3.044385   -4.415659    4.655774    0.106840    3.718621   -3.529127   -1.073236
 Old and new energies:      1.18897      0.50553 And GRMS:       4.0577
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -0.394279    0.259500   -1.815780    1.630662    2.418463   -2.414530    0.009059   -1.913943    1.947165    0.639394
-Previous structure in terms of the internal coordinates:
-    1.111614    1.108937    1.117437    1.103321    1.814401    2.013123    1.913392    1.992521    1.833720    1.887618
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.000563    0.000371   -0.002594    0.002330    0.033775   -0.035347   -0.000612   -0.028139    0.027114    0.008312
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.000564    0.000371   -0.002599    0.002334    0.033847   -0.035348   -0.000555   -0.028112    0.027206    0.008359
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001659   0.000005  -0.000033   0.000030   0.000002   0.000007   0.000004   0.000006   0.000001   0.000004
    2:   0.000005   0.001664   0.000022  -0.000020  -0.000001  -0.000005  -0.000002  -0.000004  -0.000001  -0.000003
    3:  -0.000033   0.000022   0.001513   0.000138   0.000008   0.000034   0.000017   0.000028   0.000006   0.000018
@@ -446,7 +412,7 @@ New coordinates:
       H    -0.509562     1.445403    -0.858967
       H    -0.565139     1.414165     0.948395
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.110489    1.109678    1.112253    1.107977    1.881631    1.942078    1.911825    1.935884    1.887610    1.903901
+    1.1105    1.1097    1.1123    1.1080    1.8816    1.9421    1.9118    1.9359    1.8876    1.9039
 Wilson B Matrix at the new structure:
    1:   -0.09729     0.99525    -0.00403     0.09729    -0.99525     0.00403     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.91557    -0.39707    -0.06375     0.00000     0.00000     0.00000     0.91557     0.39707     0.06375     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -473,15 +439,7 @@ Gradient in terms of the internal coordinates:
     0.342224   -0.225493    1.576822   -1.416169   -2.040247    2.191848    0.073093    1.757763   -1.622296   -0.480787
 Old and new energies:      0.50553      0.10996 And GRMS:       1.8762
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -0.393636    0.259148   -1.813028    1.628216    2.375411   -2.463926   -0.033748   -1.960858    1.906831    0.592449
-Previous structure in terms of the internal coordinates:
-    1.111051    1.109308    1.114843    1.105651    1.848176    1.977776    1.912780    1.964383    1.860834    1.895930
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.000562    0.000370   -0.002590    0.002326    0.033455   -0.035698   -0.000955   -0.028499    0.026776    0.007971
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.000563    0.000371   -0.002595    0.002331    0.033509   -0.035696   -0.000898   -0.028467    0.026861    0.008005
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001659   0.000005  -0.000033   0.000030   0.000002   0.000007   0.000004   0.000006   0.000002   0.000004
    2:   0.000005   0.001664   0.000022  -0.000020  -0.000001  -0.000005  -0.000003  -0.000004  -0.000001  -0.000003
    3:  -0.000033   0.000022   0.001513   0.000138   0.000009   0.000034   0.000018   0.000028   0.000007   0.000019
@@ -527,7 +485,7 @@ New coordinates:
       H    -0.495351     1.436110    -0.855817
       H    -0.571432     1.410076     0.954994
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.109999    1.110001    1.109995    1.110005    1.910606    1.910588    1.910672    1.910650    1.910692    1.910592
+    1.1100    1.1100    1.1100    1.1100    1.9106    1.9106    1.9107    1.9106    1.9107    1.9106
 Wilson B Matrix at the new structure:
    1:   -0.07986     0.99675     0.01103     0.07986    -0.99675    -0.01103     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.91236    -0.40701    -0.04416     0.00000     0.00000     0.00000     0.91236     0.40701     0.04416     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -554,15 +512,7 @@ Gradient in terms of the internal coordinates:
    -0.000801    0.000488   -0.003564    0.003182   -0.001936   -0.003173    0.002702    0.001170    0.004141   -0.002905
 Old and new energies:      0.10996      0.00005 And GRMS:       0.0032
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-   -0.343025    0.225981   -1.580386    1.419352    2.038311   -2.195021   -0.070390   -1.756593    1.626437    0.477882
-Previous structure in terms of the internal coordinates:
-    1.110489    1.109678    1.112253    1.107977    1.881631    1.942078    1.911825    1.935884    1.887610    1.903901
-Change in the structure in terms of the internal coordinates: (vector sk)
-   -0.000490    0.000323   -0.002258    0.002028    0.028975   -0.031490   -0.001154   -0.025234    0.023082    0.006691
-Product of the inverse Hessian and the change in gradient, vector vk:
-   -0.000491    0.000324   -0.002263    0.002032    0.028998   -0.031487   -0.001106   -0.025201    0.023144    0.006704
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001659   0.000005  -0.000033   0.000030   0.000002   0.000007   0.000004   0.000006   0.000002   0.000004
    2:   0.000005   0.001664   0.000022  -0.000020  -0.000001  -0.000005  -0.000003  -0.000004  -0.000001  -0.000003
    3:  -0.000033   0.000022   0.001512   0.000139   0.000010   0.000033   0.000018   0.000028   0.000008   0.000019
@@ -600,7 +550,7 @@ New coordinates:
       H    -0.495351     1.436120    -0.855828
       H    -0.571415     1.410070     0.954995
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.110000    1.110000    1.110000    1.110000    1.910612    1.910616    1.910654    1.910648    1.910660    1.910610
+    1.1100    1.1100    1.1100    1.1100    1.9106    1.9106    1.9107    1.9106    1.9107    1.9106
 Wilson B Matrix at the new structure:
    1:   -0.07986     0.99675     0.01101     0.07986    -0.99675    -0.01101     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.91235    -0.40701    -0.04417     0.00000     0.00000     0.00000     0.91235     0.40701     0.04417     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
@@ -627,15 +577,7 @@ Gradient in terms of the internal coordinates:
    -0.000013    0.000015   -0.000082    0.000077   -0.001476   -0.001204    0.001460    0.001015    0.001854   -0.001649
 Old and new energies:      0.00005      0.00005 And GRMS:       0.0018
 
-Change in the gradient in terms of the internal coordinates: (vector yk)
-    0.000788   -0.000472    0.003482   -0.003105    0.000460    0.001969   -0.001242   -0.000155   -0.002287    0.001255
-Previous structure in terms of the internal coordinates:
-    1.109999    1.110001    1.109995    1.110005    1.910606    1.910588    1.910672    1.910650    1.910692    1.910592
-Change in the structure in terms of the internal coordinates: (vector sk)
-    0.000001   -0.000001    0.000005   -0.000004    0.000007    0.000028   -0.000018   -0.000002   -0.000033    0.000018
-Product of the inverse Hessian and the change in gradient, vector vk:
-    0.000001   -0.000001    0.000005   -0.000004   -0.000003    0.000020   -0.000008    0.000005   -0.000020    0.000007
-Updated approximate inverse Hessian M in internal coordinates:
+Updated apprxoimate inverse Hessian M in internal coordinates:
    1:   0.001657   0.000006  -0.000042   0.000038   0.000042  -0.000002  -0.000016  -0.000027  -0.000004   0.000029
    2:   0.000006   0.001663   0.000027  -0.000024  -0.000026  -0.000001   0.000010   0.000016   0.000004  -0.000019
    3:  -0.000042   0.000027   0.001476   0.000171   0.000189  -0.000004  -0.000073  -0.000117  -0.000025   0.000134
@@ -673,7 +615,7 @@ New coordinates:
       H    -0.495344     1.436125    -0.855838
       H    -0.571402     1.410062     0.954999
 New set of internals q (note these are the ones that correspond to the best fit Cartesians):
-    1.110000    1.110000    1.110001    1.109999    1.910631    1.910634    1.910635    1.910635    1.910634    1.910632
+    1.1100    1.1100    1.1100    1.1100    1.9106    1.9106    1.9106    1.9106    1.9106    1.9106
 Wilson B Matrix at the new structure:
    1:   -0.07986     0.99675     0.01099     0.07986    -0.99675    -0.01099     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 
    2:   -0.91235    -0.40703    -0.04418     0.00000     0.00000     0.00000     0.91235     0.40703     0.04418     0.00000     0.00000     0.00000     0.00000     0.00000     0.00000 

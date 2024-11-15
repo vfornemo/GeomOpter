@@ -1,0 +1,4 @@
+name = "cholestane"
+path = "./cholestane.mol2"
+calc_type = "intl"
+output = "./cholestane.log"

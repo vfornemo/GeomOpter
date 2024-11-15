@@ -1,0 +1,5 @@
+name = "cholestane"
+path = "./cholestane.mol2"
+calc_type = "car"
+output = "./cholestane.log"
+max_cycle = 300

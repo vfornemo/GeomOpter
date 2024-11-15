@@ -8,6 +8,7 @@ use crate::{matrix::MatFull, grad::Gradient};
 use crate::utils::constant::WOLFE_C1;
 use log::{debug, info, trace, warn};
 use crate::matrix::mat_blas_lapack::mat_dgemm;
+use crate::io::Result;
 
 /// Cartesian optimization structure
 /// # Fields:
@@ -45,11 +46,11 @@ impl OptCar {
 
     }
 
-    pub fn kernel(&mut self) {
-        self.geom_opt();
+    pub fn kernel(&mut self, res: &mut Result) {
+        self.geom_opt(res);
     }
 
-    pub fn geom_opt(&mut self) {
+    pub fn geom_opt(&mut self, res: &mut Result) {
 
         let mut cycle = 0;
 
@@ -66,14 +67,20 @@ impl OptCar {
         }
 
         if self.grms <= self.grad.geom.input.rms_tol {
-            info!("##########################\n# Optimization converged #\n##########################");
+            info!("\n##########################\n# Optimization converged #\n##########################");
             info!("Final energy at mimimum:{:-16.8} kcal/mol", self.grad.geom.e_tot);
             info!("Final coordinates:");
             self.grad.geom.formated_output_coord("info");
-            
+            res.is_converged = true;
+            res.e_tot = Some(self.grad.geom.e_tot);
+            res.grms = Some(self.grms);
+            res.geom = Some(self.grad.geom.clone());
+            res.conv_cyc = Some(cycle);
         } else {
-            warn!("Optimization did not converge after {} cycles", cycle);
+            warn!("Warning: Optimization did not converge after {} cycles", cycle);
             warn!("Please check the input and try again");
+            res.is_converged = false;
+            res.grms = Some(self.grms);
         }
         
 
