@@ -1,13 +1,18 @@
-# Path of the mol2 file
+## Path of the mol2 file
 # path = "examples/cholestane.mol2"
 path = "examples/ethane.mol2"
 # path = "examples/methylcyclohexane.mol2"
+# path = "examples/methane.mol2"
+# path = "examples/isobutane.mol2"
 
-# max cycle for geometry optimization
+## Calculation type: "car", "intl", "energy"
+calc_type = "intl"
+
+## max cycle for geometry optimization
 max_cycle = 50
 
-# RMS tolerance for geometry optimization
+## RMS tolerance for geometry optimization
 rms_tol = 0.001
 
-# Cartesian Convergence tolerance
+## Cartesian Convergence tolerance
 car_conver = 0.00001

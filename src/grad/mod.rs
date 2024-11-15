@@ -1,7 +1,7 @@
 
-//! Molecule struct and its implementation. 
+//! Gradient struct and its implementation. 
 //! 
-//! The `Molecule` struct is used to store the geometry of the molecule and its analytical gradient.
+//! The [`Gradient`] struct is used to store the geometry of the molecule and its analytical gradient.
 
 #![allow(non_snake_case)]
 
@@ -10,9 +10,9 @@ use crate::geom::bond::BondType;
 use crate::geom::angle::AngleType;
 use crate::matrix::MatFull;
 use crate::utils::constant::{A0_CCC, A0_XCX, Kb_CC, Kb_CH, Ka_CCC, Ka_XCX, N_XCCX, A_XCCX, R0_CC, R0_CH, SIGMA_C, SIGMA_H, EPSILON_C, EPSILON_H};
-use log::{debug, info, trace};
+use log::{debug, trace};
 
-/// Molecule structure
+/// Molecular gradient structure
 /// # Fields:
 /// * `geom`: Geometry
 /// * `B_mat`: Wilson B matrix
@@ -22,7 +22,7 @@ use log::{debug, info, trace};
 /// * `grad_vdw`: Gradient of VDW energy
 /// * `grad_tot`: Gradient of total energy
 #[derive(Debug, Clone)]
-pub struct Molecule {
+pub struct Gradient {
     pub geom: Geom,
     pub B_mat: MatFull<f64>,
     pub grad_str: MatFull<f64>,
@@ -32,13 +32,13 @@ pub struct Molecule {
     pub grad_tot: MatFull<f64>,
 }
 
-impl Molecule {
+impl Gradient {
 
-    /// Create a new Molecule from `Geom`
-    pub fn from(geom: Geom) -> Molecule {
+    /// Create a new [`Gradient`] from [`Geom`]
+    pub fn from(geom: Geom) -> Gradient {
         let natm = geom.natm;
         let n_intl = geom.nbond + geom.nangle + geom.ndihedral;
-        Molecule {
+        Gradient {
             geom,
             B_mat: MatFull::<f64>::from_vec([natm*3, n_intl], vec![0.0; 3*natm*n_intl]),
             grad_str: MatFull::<f64>::from_vec([3, natm], vec![0.0; 3*natm]),
@@ -49,7 +49,7 @@ impl Molecule {
         }
     }
 
-    /// Build the molecule, calculating the B matrix and the gradients
+    /// Build the gradient, calculating the B matrix and the gradients
     pub fn build(&mut self) {
         self.get_B_mat();
         self.get_g_str(); 
@@ -96,9 +96,10 @@ impl Molecule {
     //     b1/x2     .
     //      ...
     //     b1/zn    ...        dn/zn
-    /// Calculate the Wilson B matrix `[nx, nq]` \
-    /// `nx`: number of cartesian coordinates \
-    /// `nq`: number of internal coordinates
+    //
+    /// Calculate the Wilson B matrix `[nx, nq]` 
+    /// - `nx`: number of cartesian coordinates 
+    /// - `nq`: number of internal coordinates
     #[inline]
     fn get_B_mat(&mut self) {
         // partial bond to partial cartesian

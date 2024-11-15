@@ -13,6 +13,7 @@ dependencies = [
  "lapack-sys",
  "log",
  "log4rs",
+ "rand",
  "serde",
  "toml",
 ]

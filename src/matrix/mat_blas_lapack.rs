@@ -1,6 +1,7 @@
 use blas::dgemm;
 use lapack::dsyev;
 use crate::matrix::MatFull;
+extern crate rand;
 
 /// BLAS dgemm 
 fn _dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, mat_c: &'a mut MatFull<f64>, opa: char, opb: char, alpha: f64, beta: f64) {	
@@ -122,7 +123,7 @@ mod test {
     use crate::matrix::MatFull;
 
     use super::{mat_dgemm, mat_dsyev};
-
+    use rand::Rng;
 
     #[test]
     fn test_dgemm() {
@@ -147,6 +148,17 @@ mod test {
         println!("{:?}", n);
 
 
+    }
+
+    #[test]
+    fn dgemm_bench() {
+        let mut rng = rand::thread_rng();
+        let mat_a = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
+        let mat_b = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
+        // timer
+        let start = std::time::Instant::now();
+        let mat_c = mat_dgemm(&mat_a, &mat_b, 'n','n', 1.0, 1.0);
+        println!("Time elapsed in dgemm: {:?}", start.elapsed());
     }
 
 
