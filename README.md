@@ -35,7 +35,7 @@ then one can run with the following command:
 
 ## Benchmark
 
-| Molecule        | $N_\text{atoms}$|$t_\text{energy}\text{(ms)}$|$t_\text{car\_opt}\text{(ms)}$|$t_\text{intl\_opt}\text{(ms)}$|
+| Molecule        | $N_\text{atoms}$|$t_\text{energy}\text{(ms)}$|$t_\text{car}\text{(ms)}$|$t_\text{intl}\text{(ms)}$|
 |-----------------|-----------------|----------------------------|------------------------------|-------------------------------|
 |methane          |      5          |            < 1             |             1                |          1                    |
 |ethane           |      8          |            < 1             |             4                |          16                   |
