@@ -2,6 +2,16 @@
 
 Simple geometry optimizer program designed for saturated hydrocarbons.
 
+## Prerequisites
+
+### Rust
+
+The program is written in Rust, so the Rust compiler must be installed. The installation instructions can be found [here](https://www.rust-lang.org/tools/install).
+
+### OpenBLAS
+
+OpenBLAS is an optimized BLAS library, required for the linear algebra operations in the program. The installation instructions can be found [here](https://www.openblas.net/).
+
 ## Configuration
 
 The configuration files are located in `./config` directory, as follows:
@@ -29,6 +39,10 @@ After configuring the `ctrl.toml` file, the program can now be executed. For the
 
 ```$ cargo build --release```
 
+If there is an error message saying "linking with 'cc' failed: exit status: 1" and "ld: library not found for -lopenblas", then one can try the following command:
+
+`RUSTFLAGS='-L/[path to openblas lib]' cargo build --release`
+
 then one can run with the following command:
 
 ```$ ./target/release/GeomOpter ./config/ctrl.toml```
@@ -44,4 +58,3 @@ then one can run with the following command:
 |methylcyclohexane|      21         |            < 1             |             56               |          245                  |
 |pinane           |      25         |            < 1             |             65               |          635                  |
 |cholestane       |      75         |            < 1             |             2238             |          12322                |
-
