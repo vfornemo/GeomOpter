@@ -1,9 +1,10 @@
 ## Name of the job
-name = "ethane_intl"
+name = "my_job"
 
 ## Path of the mol2 file
 # path = "benchmark/examples/cholestane.mol2"
 path = "benchmark/examples/ethane.mol2"
+# path = "benchmark/examples/nbutane.mol2"
 # path = "benchmark/examples/methylcyclohexane.mol2"
 # path = "benchmark/examples/methane.mol2"
 # path = "benchmark/examples/isobutane.mol2"
@@ -12,10 +13,10 @@ path = "benchmark/examples/ethane.mol2"
 calc_type = "intl"
 
 ## max cycle for geometry optimization
-max_cycle = 50
+max_cycle = 300
 
 ## RMS tolerance for geometry optimization
-rms_tol = 0.001
+rms_tol = 0.000001
 
 ## Cartesian Convergence tolerance
 car_conver = 0.00001

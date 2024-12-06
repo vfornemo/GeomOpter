@@ -1,7 +1,6 @@
 //! Basic structures for molecular geometry and energy calculation
 //! 
 //! 
-//! 
 //! # Modules:
 //! - [`self`] - Molecular geometry structure [`Geom`] and related functions
 //! - [`coord`] - Cartesian coordinate structure, including functions for coordinate operations 
@@ -30,27 +29,7 @@ use log::{debug, info, trace};
 
 
 /// Structure of a molecular geometry
-/// # Fields:
-/// * `input`: input file
-/// * `natm`: number of atoms
-/// * `atoms`: atom sequence with element symbols
-/// * `atoms_idx`: atom sequence with atom numbers
-/// * `coord`: Cartesian coordinates
-/// * `nbond`: number of bonds
-/// * `bonds`: bonds
-/// * `etot_str`: total stretching energy
-/// * `nangle`: number of angles
-/// * `angles`: angles
-/// * `etot_bend`: total bending energy
-/// * `ndihedral`: number of dihedral angles
-/// * `dihedrals`: dihedral angles
-/// * `etot_tor`: total torsion energy
-/// * `nintl`: number of internal coordinates
-/// * `c_number`: number of carbons
-/// * `neighbors`: neighboring atoms of each atom
-/// * `atm_pair`: atoms pairs for vdw calculation
-/// * `etot_vdw`: total VDW energy
-/// * `e_tot`: total potential energy
+
 #[derive(Debug, Clone)]
 pub struct Geom {
     /// input file

@@ -5,26 +5,17 @@ use crate::geom::coord::CoordVec;
 use crate::geom::coord;
 
 /// Structure of a dihedral angle
-/// # Fields:
-/// * `atms`: atom indices of the four bonding atoms
-/// * `dihedral`: dihedral angle in degrees
-/// * `e_tor`: torsion energy
 #[derive(Debug, Clone)]
 pub struct Dihedral {
+    /// atom indices of the four bonding atoms
     pub atms: [usize;4],
+    /// dihedral angle in degrees
     pub dihedral: f64,
-    pub e_tor: f64,  // torsion energy
+    /// torsion energy
+    pub e_tor: f64, 
 }
 
 impl Dihedral {
-    // fn new() -> Dihedral {
-    //     Dihedral {
-    //         atms: [0usize;4],
-    //         dihedral: 0.0f64,
-    //         e_tor: 0.0f64,
-    //     }
-    // }
-
     /// Create a new dihedral angle from four atom indices
     pub fn from(atms: [usize;4]) -> Dihedral {
         Dihedral {

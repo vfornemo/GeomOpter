@@ -9,15 +9,6 @@ use crate::geom::Geom;
 
 
 /// Config structure parsed from .toml file
-/// # Fields:
-/// * `name`: name of the job
-/// * `path`: file location
-/// * `calc_type`: calculation type
-/// * `max_cycle`: maximum number of cycles
-/// * `rms_tol`: rms tolerance
-/// * `car_conver`: cartesian convergence
-/// * `log_level`: log level
-/// * `output`: output file path
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     /// name of the job
@@ -157,6 +148,8 @@ impl Result {
     }
 
     pub fn logger(&self) {
+        let print_digits = (-self.input.rms_tol.log10()).ceil() as usize + 4;
+
         match self.input.calc_type.as_str() {
             "energy" => {
                 info!("Energy calculation of {}", self.input.name);
@@ -172,7 +165,7 @@ impl Result {
             true => {
                 info!("Optimization converged within {} cycles", self.conv_cyc.unwrap());
                 match self.e_tot {
-                    Some(e) => info!("Final energy at mimimum: {:-.8}", e),
+                    Some(e) => info!("Final energy at mimimum: {:-.1$}", e, print_digits),
                     None => (),
                 }
                 match &self.geom {

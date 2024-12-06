@@ -16,28 +16,19 @@ pub enum AngleType {
 }
 
 /// Structure of a bond angle
-/// # Fields:
-/// * `atms`: atom indices of the three bonding atoms
-/// * `angle_type`: angle type
-/// * `angle`: angle in degrees
-/// * `e_bend`: bending energy
 #[derive(Debug, Clone)]
 pub struct Angle {
+    /// atom indices of the three bonding atoms
     pub atms: [usize;3],
+    /// angle type
     pub angle_type: AngleType,
+    /// angle in degrees
     pub angle: f64,
-    pub e_bend: f64,  // bending energy
+    /// bending energy
+    pub e_bend: f64, 
 }
 
 impl Angle {
-    // fn new() -> Angle {
-    //     Angle {
-    //         atms: [0usize;3],
-    //         angle_type: AngleType::XXX,
-    //         angle: 0.0f64,
-    //         e_bend: 0.0f64,
-    //     }
-    // }
 
     /// Create a new angle from three atom indices
     pub fn from(atms: [usize;3]) -> Angle {

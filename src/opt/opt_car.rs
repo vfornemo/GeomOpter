@@ -11,20 +11,19 @@ use crate::matrix::mat_blas_lapack::mat_dgemm;
 use crate::io::Result;
 
 /// Cartesian optimization structure
-/// # Fields:
-/// * `grad`: Gradient
-/// * `inv_hess`: Inverse Hessian
-/// * `p_k`: p_k
-/// * `alpha`: alpha
-/// * `y_k`: y_k
-/// * `grms`: gradient RMS
 #[derive(Clone, Debug)]
 pub struct OptCar {
+    /// Gradient
     pub grad: Gradient,
+    /// Inverse Hessian
     pub inv_hess: MatFull<f64>,
+    /// p_k
     pub p_k: MatFull<f64>,
+    /// alpha
     pub alpha: f64,
+    /// y_k
     pub y_k: MatFull<f64>,
+    /// gradient RMS
     pub grms: f64,
 
 }
@@ -91,7 +90,6 @@ impl OptCar {
         let mut opt = self.clone();
         let mut grad_V = self.grad.grad_tot.clone();
         grad_V.reshape([self.grad.geom.natm*3, 1]);
-        // opt.p_k = -self.inv_hess.mat_mul(&grad_V, 'n', 'n');
         opt.p_k = mat_dgemm(&self.inv_hess, &grad_V, 'n', 'n', -1.0, 0.0);
         opt.p_k.reshape([3,self.grad.geom.natm]);
 

@@ -16,32 +16,22 @@ pub enum BondType {
 
 #[derive(Debug, Clone)]
 /// Structure of a bond
-/// # Fields:
-/// * `atms`: atom indices of the bonding atoms
-/// * `bond_type`: bond type
-/// * `bond_length`: bond length
-/// * `e_str`: stretching energy or vdw energy, depending on `is_LJ_pair`
-/// * `is_LJ_pair`: whether the bond is counted in vdw energy calculation
 pub struct Bond {
+    /// atom indices of the bonding atoms
     pub atms: [usize;2],
+    /// bond type
     pub bond_type: BondType,
+    /// bond length
     pub bond_length: f64,
+    /// stretching energy or vdw energy, depending on `is_LJ_pair`
     pub e_str: f64,  // stretching energy (or vdw energy for atom pairs)
+    /// whether the bond is counted in vdw energy calculation
     pub is_LJ_pair: bool,
 }
 
 
 impl Bond {
-    // fn new() -> Bond {
-    //     Bond {
-    //         atms: [0usize;2],
-    //         bond_type: BondType::XX,
-    //         bond_length: 0.0f64,
-    //         e_str: 0.0f64,
-    //         is_LJ_pair: false,
-    //     }
-    // }
-    
+
     /// Create a new bond from two atom indices
     pub fn from(atm1: usize, atm2: usize) -> Bond {
         Bond {

@@ -9,17 +9,28 @@ use crate::utils::constant::MAX_STEP_SIZE;
 use crate::utils::{formated_output_vec, rms, dihedral_diff_check_rad};
 use crate::io::Result;
 
+/// Internal Coordinate optimization structure
 #[derive(Clone, Debug)]
 pub struct OptIntl{
+    /// Gradient
     pub grad: Gradient,
+    /// Internal coordinates
     pub intl_coords: MatFull<f64>,
+    /// Inverse Hessian
     pub inv_hess: MatFull<f64>,
+    /// Inverse G matrix
     pub inv_G: MatFull<f64>,
+    /// Gradient of internal coordinates
     pub grad_q: MatFull<f64>,
+    /// p_qk
     pub p_qk: MatFull<f64>,
+    /// q_k+1
     pub q_k1: MatFull<f64>,
+    /// y_k
     pub y_k: MatFull<f64>,
+    /// s_k
     pub s_k: MatFull<f64>,
+    /// gradient RMS
     pub grms: f64,
 
 }

@@ -13,22 +13,21 @@ use crate::utils::constant::{A0_CCC, A0_XCX, Kb_CC, Kb_CH, Ka_CCC, Ka_XCX, N_XCC
 use log::{debug, trace};
 
 /// Molecular gradient structure
-/// # Fields:
-/// * `geom`: Geometry
-/// * `B_mat`: Wilson B matrix
-/// * `grad_str`: Gradient of stretching energy
-/// * `grad_bend`: Gradient of bending energy
-/// * `grad_tors`: Gradient of torsional energy
-/// * `grad_vdw`: Gradient of VDW energy
-/// * `grad_tot`: Gradient of total energy
 #[derive(Debug, Clone)]
 pub struct Gradient {
+    /// Geometry of the molecule
     pub geom: Geom,
+    /// Wilson B matrix
     pub B_mat: MatFull<f64>,
+    /// Gradient of stretching energy
     pub grad_str: MatFull<f64>,
+    /// Gradient of bending energy
     pub grad_bend: MatFull<f64>,
+    /// Gradient of torsional energy
     pub grad_tors: MatFull<f64>,
+    /// Gradient of VDW energy
     pub grad_vdw: MatFull<f64>,
+    /// Gradient of total energy
     pub grad_tot: MatFull<f64>,
 }
 

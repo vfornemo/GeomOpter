@@ -3,6 +3,7 @@ use lapack::dsyev;
 use crate::matrix::MatFull;
 extern crate rand;
 
+#[inline]
 /// BLAS dgemm 
 fn _dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, mat_c: &'a mut MatFull<f64>, opa: char, opb: char, alpha: f64, beta: f64) {	
 
@@ -47,6 +48,7 @@ fn _dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, mat_c: &'a mut M
 
 }
 
+#[inline]
 /// Matrix multiplication 
 /// ```text
 /// C := alpha*op( A )*op( B ) + beta*C, 
@@ -72,7 +74,7 @@ pub fn mat_dgemm<'a>(mat_a: &'a MatFull<f64>, mat_b: &'a MatFull<f64>, opa: char
     
 }
 
-
+#[inline]
 /// Calculate the eigenvalues and eigenvectors of a real symmetric matrix \
 /// jobz: `'N'/'n'` (eigenvalues only) or `'V'/'v'` (eigenvalues and eigenvectors)
 pub fn mat_dsyev<'a>(mat_a: &'a MatFull<f64>, jobz: char) -> (Option<MatFull<f64>>, Vec<f64>, i32) {
@@ -153,12 +155,24 @@ mod test {
     #[test]
     fn dgemm_bench() {
         let mut rng = rand::thread_rng();
-        let mat_a = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
-        let mat_b = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
+        let mat_a = MatFull::<f64>::from_vec([1000,1000], vec![rng.gen(); 1000000]);
+        let mat_b = MatFull::<f64>::from_vec([1000,1000], vec![rng.gen(); 1000000]);
         // timer
         let start = std::time::Instant::now();
         let _c = mat_dgemm(&mat_a, &mat_b, 'n','n', 1.0, 1.0);
         println!("Time elapsed in dgemm: {:?}", start.elapsed());
+    }
+
+    #[test]
+    fn dsyev_bench() {
+        let mut rng = rand::thread_rng();
+        let mut mat_a = MatFull::<f64>::from_vec([500,500], vec![rng.gen(); 250000]);
+        let mut_b = mat_a.transpose();
+        // timer
+        mat_a += &mut_b;
+        let start = std::time::Instant::now();
+        let _c = mat_dsyev(&mat_a, 'V');
+        println!("Time elapsed in dsyev: {:?}", start.elapsed());
     }
 
 
