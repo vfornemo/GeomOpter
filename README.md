@@ -6,11 +6,36 @@ Simple geometry optimizer program designed for saturated hydrocarbons.
 
 ### Rust
 
-The program is written in Rust, so the Rust compiler must be installed. The installation instructions can be found [here](https://www.rust-lang.org/tools/install).
+The program is written in Rust, so the Rust compiler must be installed. The installation instructions can be found [here](https://www.rust-lang.org/tools/install). Generally, the installation can be done with the following command:
+
+```bash
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
 ### OpenBLAS
 
 OpenBLAS is an optimized BLAS library, required for the linear algebra operations in the program. The installation instructions can be found [here](https://www.openblas.net/).
+
+## Installation
+
+After installing the prerequisites, the program can be cloned from the repository with the following command:
+
+```bash
+$ git clone git@github.com:vfornemo/GeomOpter.git
+```
+
+Once cloned, the program can be compiled with the following command:
+
+```bash
+$ cd GeomOpter
+$ cargo build --release
+```
+
+If there is an error message saying `"linking with 'cc' failed: exit status: 1" and "ld: library not found for -lopenblas"`, then one can try the following command:
+
+```bash
+$ RUSTFLAGS='-L/[path to openblas lib]' cargo build --release
+```
 
 ## Configuration
 
@@ -29,23 +54,17 @@ The control file is a `.toml` file that contains input arguments to the program,
 - `log_level` : The level of the log, which can be one of the following: `off`, `error`, `warn`, `info`, `debug`, `trace`. (Default: `info`)
 - `output` : Location of the output file. (Default: `./output.log`)
 
-### log4rs.yaml
+### ~~log4rs.yaml~~
 
 This file is no longer used, as the logging configuration is now done in the `ctrl.toml` file.
 
 ## Usage
 
-After configuring the `ctrl.toml` file, the program can now be executed. For the first time, the program must be compiled with the following command:
+After configuring the `ctrl.toml` file, the program can now be executed. One can run with the following command:
 
-```$ cargo build --release```
-
-If there is an error message saying "linking with 'cc' failed: exit status: 1" and "ld: library not found for -lopenblas", then one can try the following command:
-
-`RUSTFLAGS='-L/[path to openblas lib]' cargo build --release`
-
-then one can run with the following command:
-
-```$ ./target/release/GeomOpter ./config/ctrl.toml```
+```bash
+$ ./target/release/GeomOpter ./config/ctrl.toml
+```
 
 ## Benchmark
 
