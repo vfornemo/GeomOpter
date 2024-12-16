@@ -10,7 +10,7 @@ path = "benchmark/examples/ethane.mol2"
 # path = "benchmark/examples/isobutane.mol2"
 
 ## Calculation type: "car", "intl", "energy"
-calc_type = "intl"
+calc_type = "car"
 
 ## max cycle for geometry optimization
 max_cycle = 300

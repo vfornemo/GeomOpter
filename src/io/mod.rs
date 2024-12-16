@@ -39,7 +39,7 @@ impl Config {
 
     pub fn to_input(self) -> Input {
         let res = Input {
-            name: self.name.unwrap_or(String::from("N/A")),
+            name: self.name.unwrap_or(String::from("my_job")),
             path: self.path.expect("Error: No mol file provided in input file"),
             calc_type: self.calc_type.expect("Error: No calculation type provided in input file"),
             max_cycle: self.max_cycle.unwrap_or(200),
@@ -177,7 +177,7 @@ impl Result {
                 }
             }
             false => {
-                warn!("Optimization did not converge within {} cycles", self.input.max_cycle);
+                warn!("Warning: Optimization did not converge within {} cycles", self.input.max_cycle);
                 warn!("The final GRMS is {:-.6}, while the tolerance is {}", self.grms.unwrap(), self.input.rms_tol);
                 warn!("Please check the input and try again");
             }

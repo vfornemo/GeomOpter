@@ -316,16 +316,12 @@ impl Geom {
         for bond in &self.bonds {
             match bond.bond_type {
                 BondType::CC => { 
-                    self.neighbors[bond.atms[0]-1].push(bond.atms[1]); self.neighbors[bond.atms[1]-1].push(bond.atms[0]);
+                    self.neighbors[bond.atms[0]-1].push(bond.atms[1]); 
+                    self.neighbors[bond.atms[1]-1].push(bond.atms[0]);
                 },
                 BondType::CH => {
-                    if self.atoms_idx[bond.atms[0]-1] == 6 {
-                        self.neighbors[bond.atms[0]-1].push(bond.atms[1]);
-                        self.neighbors[bond.atms[1]-1].push(bond.atms[0]);
-                    } else {
-                        self.neighbors[bond.atms[1]-1].push(bond.atms[0]);
-                        self.neighbors[bond.atms[0]-1].push(bond.atms[1]);
-                    }
+                    self.neighbors[bond.atms[0]-1].push(bond.atms[1]);
+                    self.neighbors[bond.atms[1]-1].push(bond.atms[0]);
                 },
                 BondType::XX => (),
                 BondType::HH => (),
@@ -460,7 +456,7 @@ impl Geom {
             },
             "trace" => {
                 for i in 0..self.natm {
-                    println!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
+                    trace!("{}  {:-10.6}  {:-10.6}  {:-10.6}", self.atoms[i], self.coord[i].x, self.coord[i].y, self.coord[i].z);
                 }
             },
             "off" => (),

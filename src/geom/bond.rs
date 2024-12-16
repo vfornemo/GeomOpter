@@ -24,7 +24,7 @@ pub struct Bond {
     /// bond length
     pub bond_length: f64,
     /// stretching energy or vdw energy, depending on `is_LJ_pair`
-    pub e_str: f64,  // stretching energy (or vdw energy for atom pairs)
+    pub e_str: f64, 
     /// whether the bond is counted in vdw energy calculation
     pub is_LJ_pair: bool,
 }
